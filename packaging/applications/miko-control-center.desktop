@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Miko Control Center
+Name[ru]=Центр управления Miko
+GenericName=System Settings
+GenericName[ru]=Системные настройки
+Comment=Manage devices, sound, displays, services and Miko OS
+Comment[ru]=Устройства, звук, экраны, службы и система Miko OS
+TryExec=miko-control-center
+Exec=miko-control-center
+Icon=miko-control-center
+Terminal=false
+Categories=Settings;DesktopSettings;
+Keywords=settings;control;system;sound;display;network;phone;services;настройки;система;звук;экран;сеть;телефон;
+StartupNotify=true
+SingleMainWindow=true

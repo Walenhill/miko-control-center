@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+readonly QML_PATH="${XDG_CONFIG_HOME:-${HOME}/.config}/quickshell/ii/control-center.qml"
+readonly LOG_PATH="${XDG_STATE_HOME:-${HOME}/.local/state}/miko-control-center.log"
+
+if [[ ! -f "${QML_PATH}" ]]; then
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send \
+            --app-name="Miko Control Center" \
+            --icon="miko-control-center" \
+            "Не удалось открыть центр управления" \
+            "Файл приложения не найден: ${QML_PATH}"
+    fi
+    printf 'Miko Control Center: file not found: %s\n' "${QML_PATH}" >&2
+    exit 1
+fi
+
+command -v qs >/dev/null 2>&1 || {
+    printf 'Miko Control Center: Quickshell command "qs" is not installed\n' >&2
+    exit 127
+}
+
+# A dead Quickshell instance may briefly leave a callable IPC endpoint behind.
+# Check the live instance registry first so the launcher never opens "nothing".
+if qs list --all 2>/dev/null | grep -Fq "Config path: ${QML_PATH}"; then
+    exec qs -p "${QML_PATH}" ipc call controlCenter show
+fi
+
+mkdir -p "$(dirname "${LOG_PATH}")"
+exec qs -p "${QML_PATH}" >>"${LOG_PATH}" 2>&1

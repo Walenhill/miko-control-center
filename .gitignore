@@ -1,0 +1,9 @@
+*.tar.gz
+*.log
+*.qmlc
+*.jsc
+.cache/
+.idea/
+.vscode/
+build/
+dist/
