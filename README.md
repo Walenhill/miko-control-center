@@ -10,9 +10,39 @@ Miko Control Center brings everyday system controls, diagnostics and personal
 integrations into one consistent interface without pretending that every Linux
 machine is identical.
 
-> **Project status:** personal system component, published for inspection,
-> adaptation and reuse. It is functional on the author's Arch/Hyprland setup,
-> but it is not a distribution-independent replacement for every settings app.
+> [!WARNING]
+> **Experimental project.** This is a personal system component published for
+> inspection, adaptation and reuse. It is functional on the author's
+> Arch/Hyprland setup, but APIs, layout and installation details may change.
+> It is not a distribution-independent replacement for every settings app.
+
+![Miko Control Center overview](docs/assets/screenshots/overview-purple.png)
+
+## Interface
+
+The interface follows the wallpaper-derived Material palette rather than
+shipping one fixed accent color.
+
+| Alternate palette | Appearance editor |
+| --- | --- |
+| ![Pink overview palette](docs/assets/screenshots/overview-pink.png) | ![Purple appearance editor](docs/assets/screenshots/appearance-purple.png) |
+
+<details>
+<summary><strong>More screenshots</strong></summary>
+
+| Network and ports | Phone and devices |
+| --- | --- |
+| ![Network port inspector](docs/assets/screenshots/network-ports.png) | ![KDE Connect phone integration](docs/assets/screenshots/devices-phone.png) |
+
+| Display workspace | System health |
+| --- | --- |
+| ![Display topology and modes](docs/assets/screenshots/displays.png) | ![System resources and Miko Watch](docs/assets/screenshots/system-health.png) |
+
+| Services and integrations |
+| --- |
+| ![Services and integrations](docs/assets/screenshots/services.png) |
+
+</details>
 
 ## Highlights
 
