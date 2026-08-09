@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.services
 import qs.modules.common
 
 QtObject {
@@ -11,6 +12,15 @@ QtObject {
     readonly property string editor: router.appearanceEditor
     readonly property Process randomProcess: randomWallpaperProcess
     readonly property bool busy: randomWallpaperProcess.running
+    property string queuedPalette: ""
+    property string runningPalette: ""
+    readonly property string paletteSelection: queuedPalette !== ""
+        ? queuedPalette
+        : runningPalette !== ""
+            ? runningPalette
+            : Config.options.appearance.palette.type
+    readonly property bool paletteBusy:
+        paletteDelay.running || paletteProcess.running
 
     readonly property var editors: ({
         wallpaper: {
@@ -88,15 +98,46 @@ QtObject {
     }
 
     function applyPalette(value) {
+        // Config writes are asynchronous. Passing the value explicitly keeps
+        // switchwall from reading the previous value, while the single worker
+        // prevents older generators from finishing after a newer choice.
+        queuedPalette = value;
         Config.options.appearance.palette.type = value;
-        Quickshell.execDetached([
-            "bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`
-        ]);
+        paletteDelay.restart();
+    }
+
+    function startPaletteJob() {
+        if (paletteProcess.running || queuedPalette === "")
+            return;
+        runningPalette = queuedPalette;
+        queuedPalette = "";
+        paletteProcess.command = [
+            Directories.wallpaperSwitchScriptPath,
+            "--noswitch",
+            "--type",
+            runningPalette
+        ];
+        paletteProcess.running = true;
     }
 
     property Process randomWallpaperProcess: Process {
         property string scriptPath: ""
         command: ["bash", "-c", scriptPath]
+    }
+
+    property Timer paletteDelay: Timer {
+        interval: 140
+        repeat: false
+        onTriggered: root.startPaletteJob()
+    }
+
+    property Process paletteProcess: Process {
+        onExited: (exitCode, exitStatus) => {
+            root.runningPalette = "";
+            MaterialThemeLoader.reapplyTheme();
+            if (root.queuedPalette !== "")
+                Qt.callLater(root.startPaletteJob);
+        }
     }
 
     property Connections routeWatch: Connections {

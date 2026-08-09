@@ -23,65 +23,68 @@ Rectangle {
     antialiasing: true
     clip: true
 
-    Rectangle {
-        anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 35 }
-        width: 240
-        height: 240
-        radius: width / 2
-        color: Qt.rgba(
-            Appearance.colors.colPrimary.r,
-            Appearance.colors.colPrimary.g,
-            Appearance.colors.colPrimary.b,
-            0.13
-        )
-    }
+    Item {
+        id: phoneArtwork
 
-    StyledImage {
-        id: phoneImage
-
-        anchors {
-            right: parent.right
-            top: parent.top
-            bottom: parent.bottom
-            rightMargin: 48
-            topMargin: 4
-            bottomMargin: -10
-        }
-        width: 176
-        source: `${Directories.assetsPath}/images/nothing-phone-3a-black.png`
-        fillMode: Image.PreserveAspectFit
-        smooth: true
-        mipmap: true
-        rotation: 4
-        opacity: phoneDrop.containsDrag ? 0.30 : (root.kde.reachable ? 1 : 0.40)
-        scale: phoneDrop.containsDrag ? 0.94 : 1
-        Behavior on opacity {
-            NumberAnimation {
-                duration: root.style.motionNormal
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.style.motionCurve
-            }
-        }
-        Behavior on scale {
-            NumberAnimation {
-                duration: root.style.motionNormal
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.style.motionCurve
-            }
-        }
-    }
-
-    MaterialSymbol {
         anchors {
             right: parent.right
             verticalCenter: parent.verticalCenter
-            rightMargin: 92
+            rightMargin: 24
         }
-        visible: phoneImage.status !== Image.Ready
-        text: "smartphone"
-        iconSize: 104
-        color: root.style.mutedInk
-        opacity: root.kde.reachable ? 0.75 : 0.35
+        width: 240
+        height: 224
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: 224
+            height: 224
+            radius: width / 2
+            color: Qt.rgba(
+                Appearance.colors.colPrimary.r,
+                Appearance.colors.colPrimary.g,
+                Appearance.colors.colPrimary.b,
+                0.13
+            )
+        }
+
+        StyledImage {
+            id: phoneImage
+
+            anchors.centerIn: parent
+            width: 204
+            height: 204
+            source: `${Directories.assetsPath}/images/nothing-phone-3a-black.png`
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            mipmap: true
+            rotation: 0
+            opacity: phoneDrop.containsDrag
+                ? 0.30 : (root.kde.reachable ? 1 : 0.40)
+            scale: phoneDrop.containsDrag ? 0.94 : 1
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: root.style.motionNormal
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: root.style.motionCurve
+                }
+            }
+            Behavior on scale {
+                NumberAnimation {
+                    duration: root.style.motionNormal
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: root.style.motionCurve
+                }
+            }
+        }
+
+        MaterialSymbol {
+            anchors.centerIn: parent
+            visible: phoneImage.status !== Image.Ready
+            text: "smartphone"
+            iconSize: 104
+            color: root.style.mutedInk
+            opacity: root.kde.reachable ? 0.75 : 0.35
+        }
     }
 
     ColumnLayout {
@@ -98,7 +101,7 @@ Rectangle {
         Rectangle {
             implicitWidth: phoneStatus.implicitWidth + 20
             implicitHeight: 29
-            radius: 14
+            radius: Appearance.rounding.full
             color: root.kde.reachable
                 ? Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g,
                           Appearance.colors.colPrimary.b, 0.18)
@@ -179,7 +182,7 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         anchors.margins: 8
-        radius: 24
+        radius: root.style.radiusSection
         visible: phoneDrop.containsDrag
         color: Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g,
                        Appearance.colors.colLayer0.b, 0.91)
@@ -203,7 +206,7 @@ Rectangle {
     Rectangle {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10 }
         implicitHeight: 48
-        radius: 18
+        radius: root.style.radiusControl
         visible: root.kde.transferState !== "idle" && !phoneDrop.containsDrag
         color: root.style.controlSurface
         RowLayout {

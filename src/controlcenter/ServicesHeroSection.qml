@@ -95,7 +95,7 @@ ColumnLayout {
         visible: root.controller.actionMessage !== ""
         Layout.fillWidth: true
         implicitHeight: 48
-        radius: 17
+        radius: root.style.radiusControl
         color: root.style.hoverSurface
 
         RowLayout {

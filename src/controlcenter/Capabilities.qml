@@ -33,6 +33,7 @@ QtObject {
                 + "kdeconnect-cli throne ddcutil easyeffects smartctl "
                 + "lsusb ps kill systemctl journalctl kitty pkexec ufw "
                 + "powerprofilesctl checkupdates paccache gio "
+                + "sensors nvidia-smi flatpak tar "
                 + "miko-watch miko-check; do "
                 + "command -v \"$c\" >/dev/null 2>&1 && printf '%s\\n' \"$c\"; "
                 + "done; "

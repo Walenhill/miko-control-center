@@ -35,6 +35,14 @@ ApplicationWindow {
     ControlCenter.Capabilities {
         id: capabilities
     }
+    ControlCenter.ControlCenterState {
+        id: controlState
+        environment: environment
+    }
+    ControlCenter.OperationCenter {
+        id: operationCenter
+        environment: environment
+    }
     ControlCenter.AppearanceController {
         id: appearanceController
         router: router
@@ -72,12 +80,28 @@ ApplicationWindow {
         updates: Updates
         capabilities: capabilities
     }
+    ControlCenter.SystemTelemetryController {
+        id: telemetryController
+        environment: environment
+    }
+    ControlCenter.SystemSnapshotsController {
+        id: snapshotsController
+        environment: environment
+    }
     ControlCenter.ServicesController {
         id: servicesController
         environment: environment
         kdeConnect: KdeConnect
         easyEffects: EasyEffects
         capabilities: capabilities
+    }
+    ControlCenter.OperationBridge {
+        operations: operationCenter
+        system: systemController
+        services: servicesController
+        network: networkController
+        applications: applicationsController
+        kdeConnect: KdeConnect
     }
 
     width: 1180
@@ -111,6 +135,30 @@ ApplicationWindow {
     readonly property int motionNormal: ui.motionNormal
     readonly property var motionCurve: ui.motionCurve
     readonly property int settingsIconRailWidth: 32
+    readonly property bool sidebarHardCompact: width < 1080
+    readonly property bool sidebarResponsiveCompact: width < 1280
+    property bool sidebarExpandedOverride: false
+    readonly property bool sidebarCompact:
+        controlState.sidebarCompact
+        || sidebarHardCompact
+        || (sidebarResponsiveCompact && !sidebarExpandedOverride)
+    readonly property int sidebarWidth: sidebarCompact ? 78 : 222
+    onSidebarResponsiveCompactChanged: {
+        if (!sidebarResponsiveCompact)
+            sidebarExpandedOverride = false;
+    }
+
+    function toggleSidebar() {
+        if (sidebarHardCompact)
+            return;
+        if (sidebarResponsiveCompact) {
+            if (controlState.sidebarCompact)
+                controlState.setSidebarCompact(false);
+            sidebarExpandedOverride = sidebarCompact;
+            return;
+        }
+        controlState.setSidebarCompact(!controlState.sidebarCompact);
+    }
     readonly property int pageContentMaxWidth: 1180
     readonly property bool hasPageBack: router.canGoBack
     readonly property var navigation: pageRegistry.pages
@@ -174,14 +222,45 @@ ApplicationWindow {
             root.raise();
             root.requestActivate();
         }
+
+        function operations(): void {
+            operationCenter.drawerOpen = true;
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
+        function sidebar(): void {
+            root.toggleSidebar();
+        }
     }
 
     function performSearch(text) {
         const query = text.trim().toLowerCase();
         filteredItems = query.length === 0 ? searchableItems : searchableItems.filter(item =>
             item.title.toLowerCase().includes(query) ||
-            item.subtitle.toLowerCase().includes(query)
+            item.subtitle.toLowerCase().includes(query) ||
+            String(item.keywords || "").toLowerCase().includes(query)
         );
+    }
+
+    function openSearchResult(item) {
+        if (!item)
+            return;
+        controlState.rememberSearch(searchField.text);
+        router.openTarget(item);
+        if (item.pageId === "appearance" && item.section)
+            appearanceController.openEditor(item.section);
+        searchField.text = "";
+        searchField.focus = false;
+        Qt.callLater(() => {
+            if (pageLoader.item
+                    && typeof pageLoader.item.revealSection === "function")
+                pageLoader.item.revealSection(item.target || item.section || "");
+            else if (pageLoader.item
+                    && typeof pageLoader.item.scrollTo === "function")
+                pageLoader.item.scrollTo(0);
+        });
     }
 
     function openPageId(pageId) {
@@ -214,6 +293,10 @@ ApplicationWindow {
             searchField.forceActiveFocus();
             searchField.selectAll();
         }
+    }
+    Shortcut {
+        sequence: "Ctrl+B"
+        onActivated: root.toggleSidebar()
     }
     Shortcut {
         sequence: "Alt+Left"
@@ -325,6 +408,7 @@ ApplicationWindow {
     }
 
     RowLayout {
+        id: appLayout
         anchors {
             fill: parent
             margins: 10
@@ -332,8 +416,17 @@ ApplicationWindow {
         spacing: 8
 
         Item {
-            Layout.preferredWidth: 222
+            Layout.preferredWidth: root.sidebarWidth
             Layout.fillHeight: true
+            clip: true
+
+            Behavior on Layout.preferredWidth {
+                NumberAnimation {
+                    duration: controlState.reducedMotion ? 0 : ui.motionNormal
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: ui.motionCurve
+                }
+            }
 
             ColumnLayout {
                 anchors {
@@ -345,19 +438,92 @@ ApplicationWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.bottomMargin: 19
-                    spacing: 12
-                    IconDisc {
-                        icon: "deployed_code"
-                        accented: true
+                    spacing: 8
+                    Rectangle {
+                        id: brandButton
+                        Layout.preferredWidth: 44
+                        Layout.preferredHeight: 44
+                        Layout.alignment: Qt.AlignHCenter
+                        radius: Appearance.rounding.full
+                        color: brandMouse.pressed
+                            ? ui.selectedSurfaceActive
+                            : brandMouse.containsMouse
+                                ? ui.selectedSurfaceHover
+                                : ui.selectedSurface
+                        border.width: 1
+                        border.color: ui.alpha(ui.selectedSurface, 0.42)
+                        antialiasing: true
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: ui.motionFast
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: ui.motionCurve
+                            }
+                        }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "deployed_code"
+                            iconSize: 22
+                            fill: 1
+                            color: ui.selectedInk
+                        }
+
+                        Rectangle {
+                            visible: !root.sidebarHardCompact
+                            anchors {
+                                right: parent.right
+                                bottom: parent.bottom
+                                rightMargin: -1
+                                bottomMargin: -1
+                            }
+                            width: 17
+                            height: 17
+                            radius: Appearance.rounding.full
+                            color: ui.controlSurface
+                            border.width: 1
+                            border.color: ui.strongHairline
+                            MaterialSymbol {
+                                anchors.centerIn: parent
+                                text: root.sidebarCompact
+                                    ? "chevron_right" : "chevron_left"
+                                iconSize: 13
+                                color: ui.ink
+                            }
+                        }
+
+                        MouseArea {
+                            id: brandMouse
+                            anchors.fill: parent
+                            enabled: !root.sidebarHardCompact
+                            hoverEnabled: true
+                            cursorShape: enabled
+                                ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            onClicked: root.toggleSidebar()
+                        }
+                        ToolTip.visible: brandMouse.containsMouse
+                            && brandMouse.enabled
+                        ToolTip.text: root.sidebarCompact
+                            ? "Развернуть меню" : "Свернуть меню"
                     }
                     ColumnLayout {
+                        visible: !root.sidebarCompact
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
                         spacing: 0
                         LabelText {
+                            Layout.fillWidth: true
                             text: "Miko OS"
+                            elide: Text.ElideRight
                             font.pixelSize: Appearance.font.pixelSize.larger
                             font.weight: Font.DemiBold
                         }
-                        MutedText { text: "Центр управления" }
+                        MutedText {
+                            Layout.fillWidth: true
+                            text: "Центр управления"
+                            elide: Text.ElideRight
+                        }
                     }
                 }
 
@@ -367,9 +533,12 @@ ApplicationWindow {
                         id: navItem
 
                         required property var modelData
-                        Layout.fillWidth: true
+                        Layout.fillWidth: !root.sidebarCompact
+                        Layout.preferredWidth: root.sidebarCompact ? 48 : -1
+                        Layout.alignment: Qt.AlignHCenter
                         implicitHeight: 48
-                        radius: Appearance.rounding.full
+                        radius: root.sidebarCompact
+                            ? Appearance.rounding.full : ui.radiusSection
                         color: root.currentPageId === modelData.id
                             ? navMouse.pressed
                                 ? ui.selectedSurfaceActive
@@ -400,12 +569,13 @@ ApplicationWindow {
                             id: navContent
                             anchors {
                                 fill: parent
-                                leftMargin: 14
-                                rightMargin: 12
+                                leftMargin: root.sidebarCompact ? 0 : 14
+                                rightMargin: root.sidebarCompact ? 0 : 12
                             }
                             spacing: 12
                             transform: Translate {
                                 x: navMouse.containsMouse
+                                    && !root.sidebarCompact
                                     && root.currentPageId !== modelData.id ? 2 : 0
                                 Behavior on x {
                                     NumberAnimation {
@@ -416,7 +586,8 @@ ApplicationWindow {
                                 }
                             }
                             Item {
-                                Layout.preferredWidth: root.settingsIconRailWidth
+                                Layout.preferredWidth: root.sidebarCompact
+                                    ? navItem.width : root.settingsIconRailWidth
                                 Layout.fillHeight: true
                                 MaterialSymbol {
                                     anchors.centerIn: parent
@@ -435,6 +606,7 @@ ApplicationWindow {
                                 }
                             }
                             LabelText {
+                                visible: !root.sidebarCompact
                                 Layout.fillWidth: true
                                 text: modelData.title
                                 font.weight: root.currentPageId === modelData.id
@@ -456,9 +628,11 @@ ApplicationWindow {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onPressed: navItem.forceActiveFocus()
                             onClicked: root.openPageId(modelData.id)
                         }
+                        ToolTip.visible: root.sidebarCompact
+                            && navMouse.containsMouse
+                        ToolTip.text: modelData.title
                         Keys.onPressed: event => {
                             if (event.key === Qt.Key_Return
                                     || event.key === Qt.Key_Enter
@@ -472,9 +646,11 @@ ApplicationWindow {
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
                     spacing: 10
                     IconDisc { icon: "info" }
                     ColumnLayout {
+                        visible: !root.sidebarCompact
                         spacing: 0
                         LabelText { text: SystemInfo.distroName; font.weight: Font.Medium }
                         MutedText { text: SystemInfo.desktopEnvironment }
@@ -509,6 +685,7 @@ ApplicationWindow {
                         icon: "arrow_back"
                         text: ""
                         implicitWidth: 44
+                        implicitHeight: 44
                         onClicked: root.navigateBack()
                     }
 
@@ -529,7 +706,7 @@ ApplicationWindow {
                     Rectangle {
                         Layout.preferredWidth: Math.min(310, Math.max(220, root.width * 0.27))
                         implicitHeight: 48
-                        radius: 18
+                        radius: ui.radiusControl
                         color: root.softSurface
                         border.width: searchField.activeFocus ? 2 : 1
                         border.color: searchField.activeFocus
@@ -563,17 +740,26 @@ ApplicationWindow {
                             onTextChanged: root.performSearch(text)
                             onAccepted: {
                                 if (root.filteredItems.length > 0)
-                                    root.openPageId(
-                                        root.filteredItems[0].pageId
-                                    );
+                                    root.openSearchResult(root.filteredItems[0]);
                             }
                         }
+                    }
+
+                    SoftButton {
+                        icon: operationCenter.activeCount > 0
+                            ? "progress_activity" : "task_alt"
+                        text: operationCenter.activeCount > 0
+                            ? String(operationCenter.activeCount) : ""
+                        implicitWidth: operationCenter.activeCount > 0 ? 58 : 44
+                        implicitHeight: 44
+                        onClicked: operationCenter.drawerOpen = true
                     }
 
                     SoftButton {
                         icon: "close"
                         text: ""
                         implicitWidth: 44
+                        implicitHeight: 44
                         onClicked: root.close()
                     }
                 }
@@ -586,7 +772,7 @@ ApplicationWindow {
                     Rectangle {
                         anchors.fill: parent
                         visible: searchField.text.length > 0
-                        radius: 24
+                        radius: ui.radiusSection
                         color: Qt.rgba(
                             Appearance.colors.colLayer0.r,
                             Appearance.colors.colLayer0.g,
@@ -607,7 +793,7 @@ ApplicationWindow {
                                 required property var modelData
                                 width: ListView.view.width
                                 height: 68
-                                radius: 18
+                                radius: ui.radiusControl
                                 color: resultMouse.containsMouse ? root.softSurface : "transparent"
                                 Behavior on color {
                                     ColorAnimation {
@@ -642,7 +828,7 @@ ApplicationWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.openPageId(modelData.pageId)
+                                    onClicked: root.openSearchResult(modelData)
                                 }
                             }
 
@@ -678,7 +864,7 @@ ApplicationWindow {
                                 property: "opacity"
                                 from: 0.82
                                 to: 1
-                                duration: ui.motionEnter
+                                duration: controlState.reducedMotion ? 0 : ui.motionEnter
                                 easing.type: Easing.BezierSpline
                                 easing.bezierCurve: ui.motionEnterCurve
                             }
@@ -687,7 +873,7 @@ ApplicationWindow {
                                 property: "y"
                                 from: 7
                                 to: 0
-                                duration: ui.motionEnter
+                                duration: controlState.reducedMotion ? 0 : ui.motionEnter
                                 easing.type: Easing.BezierSpline
                                 easing.bezierCurve: ui.motionEnterCurve
                             }
@@ -713,13 +899,24 @@ ApplicationWindow {
             systemState: systemController
             servicesState: servicesController
             applicationsState: applicationsController
+            preferences: controlState
+            operations: operationCenter
             userName: SystemInfo.username
             screenCount: Quickshell.screens.length
-            onToggleWifiRequested: Network.toggleWifi()
+            onToggleWifiRequested: {
+                Network.toggleWifi();
+                operationCenter.showMessage(
+                    "Wi-Fi", "Состояние переключено", "wifi", "", null
+                );
+            }
             onToggleBluetoothRequested: {
                 if (Bluetooth.defaultAdapter)
                     Bluetooth.defaultAdapter.enabled =
                         !Bluetooth.defaultAdapter.enabled;
+                operationCenter.showMessage(
+                    "Bluetooth", "Состояние переключено",
+                    "bluetooth", "", null
+                );
             }
             onCyclePowerProfileRequested: {
                 const next = systemController.powerProfile === "balanced"
@@ -727,10 +924,22 @@ ApplicationWindow {
                     : systemController.powerProfile === "performance"
                         ? "power-saver" : "balanced";
                 systemController.setPowerProfile(next);
+                operationCenter.showMessage(
+                    "Профиль питания", next, "speed", "", null
+                );
             }
-            onToggleNotificationsRequested:
-                applicationsController.toggleNotifications()
-            onToggleNightLightRequested: Hyprsunset.toggleTemperature()
+            onToggleNotificationsRequested: {
+                applicationsController.toggleNotifications();
+                operationCenter.showMessage(
+                    "Уведомления", "Режим изменён", "notifications", "", null
+                );
+            }
+            onToggleNightLightRequested: {
+                Hyprsunset.toggleTemperature();
+                operationCenter.showMessage(
+                    "Ночной свет", "Состояние переключено", "bedtime", "", null
+                );
+            }
             onNavigateRequested: pageId => root.openPageId(pageId)
         }
     }
@@ -775,6 +984,8 @@ ApplicationWindow {
         id: systemPage
         ControlCenter.SystemPage {
             controller: systemController
+            telemetry: telemetryController
+            snapshots: snapshotsController
             style: ui
             onNavigateRequested: pageId => root.openPageId(pageId)
         }
@@ -853,5 +1064,22 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    ControlCenter.OperationDrawer {
+        anchors.fill: parent
+        operations: operationCenter
+        style: ui
+        blurSource: appLayout
+    }
+
+    ControlCenter.MikoSnackbar {
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            bottom: parent.bottom
+            bottomMargin: 24
+        }
+        operations: operationCenter
+        style: ui
     }
 }

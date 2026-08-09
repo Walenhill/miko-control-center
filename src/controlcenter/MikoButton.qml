@@ -10,12 +10,15 @@ Rectangle {
     property alias text: label.text
     property alias icon: symbol.text
     property bool selected: false
+    readonly property bool hasIcon: symbol.text !== ""
+    readonly property bool hasText: label.text !== ""
+    readonly property bool iconOnly: hasIcon && !hasText
     readonly property bool pressed: pointer.pressed
     readonly property bool hovered: pointer.containsMouse
     signal clicked()
 
     implicitHeight: 42
-    implicitWidth: content.implicitWidth + 28
+    implicitWidth: iconOnly ? implicitHeight : content.implicitWidth + 28
     radius: Appearance.rounding.full
     activeFocusOnTab: enabled
     opacity: enabled ? 1 : 0.42
@@ -65,7 +68,7 @@ Rectangle {
     RowLayout {
         id: content
         anchors.centerIn: parent
-        spacing: 7
+        spacing: root.hasIcon && root.hasText ? 7 : 0
         transform: Translate {
             y: root.pressed ? 1 : 0
             Behavior on y {
@@ -79,6 +82,7 @@ Rectangle {
 
         MaterialSymbol {
             id: symbol
+            visible: root.hasIcon
             iconSize: 18
             fill: root.selected ? 1 : 0
             color: root.selected ? root.style.selectedInk : root.style.ink
@@ -92,6 +96,7 @@ Rectangle {
         }
         StyledText {
             id: label
+            visible: root.hasText
             color: root.selected ? root.style.selectedInk : root.style.ink
             font.pixelSize: Appearance.font.pixelSize.small
             font.weight: Font.Medium
@@ -104,7 +109,6 @@ Rectangle {
         enabled: root.enabled
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onPressed: root.forceActiveFocus()
         onClicked: root.clicked()
     }
 

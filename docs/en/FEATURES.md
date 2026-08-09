@@ -8,6 +8,7 @@
 - Power profile and update summary.
 - Quick actions for Wi-Fi, Bluetooth, notifications, night light and displays.
 - System attention from Miko Watch.
+- Persisted overview sections and quick-action ordering.
 
 ## Network
 
@@ -73,6 +74,9 @@ not generic GTK, KDE Plasma or GNOME settings.
 - Package cache, trash, journal and orphan-package analysis.
 - Confirmed cleanup actions.
 - Miko Watch health events with read, ignore and restore flows.
+- On-demand temperatures and failed-unit checks without constant polling.
+- A local privacy-conscious diagnostic report.
+- Confirmed snapshots of the shell and control-center configuration.
 
 ## Services
 
@@ -94,9 +98,12 @@ not generic GTK, KDE Plasma or GNOME settings.
 ## Interaction
 
 - `Ctrl+F` / `Ctrl+K`: focus search.
+- `Ctrl+B`: collapse or expand the sidebar.
 - `Enter`: open the first search result.
 - `Alt+Left`: navigate back.
 - `Esc`: leave search, leave a nested section, then close the window.
 - `Home`, `End`, `Page Up`, `Page Down`: fast page navigation.
 - Accelerated mouse-wheel scrolling.
 - Short opacity/translation page transitions without scaling text.
+- Deep search that routes directly to a matching subsection.
+- One operation center and compact feedback for background actions.

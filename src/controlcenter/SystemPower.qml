@@ -69,7 +69,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 58
-                radius: 20
+                radius: root.style.radiusSection
                 color: selected
                     ? Appearance.colors.colPrimary
                     : (profileMouse.containsMouse

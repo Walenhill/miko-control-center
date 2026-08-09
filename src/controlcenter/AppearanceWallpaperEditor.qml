@@ -43,7 +43,7 @@ ColumnLayout {
 
                 required property var modelData
                 readonly property bool selected:
-                    Config.options.appearance.palette.type === modelData.value
+                    root.controller.paletteSelection === modelData.value
 
                 width: paletteText.implicitWidth + 28
                 height: 42

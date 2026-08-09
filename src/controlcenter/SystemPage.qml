@@ -6,6 +6,8 @@ MikoPageFlickable {
     id: root
 
     required property var controller
+    required property var telemetry
+    required property var snapshots
     required property var style
 
     signal navigateRequested(string pageId)
@@ -17,13 +19,21 @@ MikoPageFlickable {
     Component.onDestruction: root.controller.active = false
 
     function revealSection(section) {
-        const target = section === "storage"
+        const target = section === "watch"
+            ? watchSection
+            : section === "performance"
+                ? performanceSection
+                : section === "telemetry"
+                ? telemetrySection
+                : section === "snapshots"
+                    ? snapshotsSection
+                    : section === "storage"
             ? storageSection
             : section === "updates"
                 ? updatesSection
                 : null;
         if (target)
-            contentY = Math.max(0, target.y - 12);
+            scrollTo(Math.max(0, target.y - 12));
     }
 
     ColumnLayout {
@@ -39,6 +49,7 @@ MikoPageFlickable {
         }
 
         SystemWatch {
+            id: watchSection
             Layout.fillWidth: true
             controller: root.controller
             style: root.style
@@ -47,6 +58,7 @@ MikoPageFlickable {
         }
 
         SystemPerformance {
+            id: performanceSection
             Layout.fillWidth: true
             controller: root.controller
             style: root.style
@@ -55,6 +67,21 @@ MikoPageFlickable {
         SystemPower {
             Layout.fillWidth: true
             controller: root.controller
+            style: root.style
+        }
+
+        SystemTelemetry {
+            id: telemetrySection
+            Layout.fillWidth: true
+            controller: root.telemetry
+            style: root.style
+            Component.onCompleted: root.telemetry.refresh()
+        }
+
+        SystemSnapshots {
+            id: snapshotsSection
+            Layout.fillWidth: true
+            controller: root.snapshots
             style: root.style
         }
 

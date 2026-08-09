@@ -59,9 +59,12 @@ shipping one fixed accent color.
 - Service inspection, integrations and Miko Watch diagnostics.
 - Process, autostart, notification and privacy activity views.
 - Keyboard navigation, accelerated scrolling and restrained desktop motion.
+- Customizable overview, deep search, operation center and settings snapshots.
 
 The complete capability matrix is in
 [docs/en/FEATURES.md](docs/en/FEATURES.md).
+The project keeps SemVer compatibility while giving releases their own
+identity through the [Lunar, Silverstar and Cadence channels](docs/en/RELEASES.md).
 
 ## Compatibility
 

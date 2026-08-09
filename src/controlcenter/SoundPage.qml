@@ -11,6 +11,12 @@ MikoPageFlickable {
     required property var style
 
     contentHeight: contentColumn.implicitHeight
+    function revealSection(section) {
+        const target = section === "mixer" ? mixerSection
+            : section === "scenes" ? scenesSection
+            : section === "tools" ? toolsSection : masterSection;
+        scrollTo(Math.max(0, target.y - 12));
+    }
 
     PwNodePeakMonitor {
         id: microphonePeak
@@ -24,6 +30,7 @@ MikoPageFlickable {
         spacing: 16
 
         SoundMasterControls {
+            id: masterSection
             audio: root.audio
             microphonePeak: microphonePeak.peak
             style: root.style
@@ -33,15 +40,18 @@ MikoPageFlickable {
             style: root.style
         }
         SoundAppMixer {
+            id: mixerSection
             audio: root.audio
             controller: root.controller
             style: root.style
         }
         SoundScenes {
+            id: scenesSection
             controller: root.controller
             style: root.style
         }
         SoundTools {
+            id: toolsSection
             controller: root.controller
             effects: root.effects
             style: root.style

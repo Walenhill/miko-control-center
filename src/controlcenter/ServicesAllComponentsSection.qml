@@ -109,7 +109,7 @@ Rectangle {
                     required property var modelData
                     Layout.fillWidth: true
                     implicitHeight: 66
-                    radius: 19
+                    radius: root.style.radiusControl
                     color: componentMouse.containsMouse
                         ? root.style.hoverSurface : "transparent"
 

@@ -170,7 +170,7 @@ ColumnLayout {
                     + root.controller.aurUpdates.length > 0
                 Layout.fillWidth: true
                 implicitHeight: updatePackageList.implicitHeight + 12
-                radius: 20
+                radius: root.style.radiusSection
                 color: root.style.hoverSurface
 
                 ColumnLayout {
@@ -240,7 +240,7 @@ ColumnLayout {
                                     implicitWidth:
                                         packageSourceLabel.implicitWidth + 18
                                     implicitHeight: 28
-                                    radius: 12
+                                    radius: Appearance.rounding.full
                                     color: root.style.sectionSurface
 
                                     MutedText {

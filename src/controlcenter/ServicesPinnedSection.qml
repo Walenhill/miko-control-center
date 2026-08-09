@@ -50,7 +50,7 @@ ColumnLayout {
             visible: root.controller.editingPins
             implicitWidth: pinHint.implicitWidth + 22
             implicitHeight: 32
-            radius: 13
+            radius: Appearance.rounding.full
             color: root.style.sectionSurface
 
             LabelText {
@@ -86,7 +86,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 112
-                radius: 24
+                radius: root.style.radiusSection
                 color: root.style.sectionSurface
                 border.width: 1
                 border.color: selected

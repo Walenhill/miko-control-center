@@ -196,7 +196,7 @@ ColumnLayout {
                         text: modelData.title
                         icon: ""
                         selected:
-                            Config.options.appearance.palette.type === modelData.value
+                            root.controller.paletteSelection === modelData.value
                         onClicked: root.controller.applyPalette(modelData.value)
                     }
                 }

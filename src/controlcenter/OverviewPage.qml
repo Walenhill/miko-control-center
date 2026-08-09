@@ -18,6 +18,8 @@ MikoPageFlickable {
     required property var applicationsState
     required property string userName
     required property int screenCount
+    required property var preferences
+    required property var operations
 
     signal toggleWifiRequested()
     signal toggleBluetoothRequested()
@@ -45,9 +47,29 @@ MikoPageFlickable {
     ColumnLayout {
         id: contentColumn
         width: parent.width
-        spacing: 16
+        spacing: root.preferences.compactOverview ? 10 : 16
+
+        RowLayout {
+            Layout.fillWidth: true
+            visible: !root.preferences.overviewEditing
+            Item { Layout.fillWidth: true }
+            MikoButton {
+                style: root.style
+                icon: "tune"
+                text: "Настроить обзор"
+                onClicked: root.preferences.overviewEditing = true
+            }
+        }
+
+        OverviewEditor {
+            visible: root.preferences.overviewEditing
+            Layout.fillWidth: true
+            preferences: root.preferences
+            style: root.style
+        }
 
         OverviewHero {
+            visible: root.preferences.showOverviewHero
             style: root.style
             userName: root.userName
             connectionSummary: (root.network.ethernet
@@ -62,6 +84,7 @@ MikoPageFlickable {
         }
 
         OverviewMetrics {
+            visible: root.preferences.showOverviewMetrics
             style: root.style
             cpuUsage: root.resourceUsage.cpuUsage
             memoryUsage: root.resourceUsage.memoryUsedPercentage
@@ -73,6 +96,7 @@ MikoPageFlickable {
         }
 
         OverviewQuickActions {
+            visible: root.preferences.showOverviewQuickActions
             style: root.style
             wifiAvailable: root.networkState.wifiHardwareAvailable
             wifiEnabled: root.network.wifiEnabled
@@ -86,6 +110,8 @@ MikoPageFlickable {
                 root.applicationsState.notificationsSilent
             nightLightActive: root.hyprsunset.temperatureActive
             screenCount: root.screenCount
+            actionOrder: root.preferences.quickActionOrder
+            hiddenActions: root.preferences.hiddenQuickActions
             onToggleWifiRequested: root.toggleWifiRequested()
             onToggleBluetoothRequested: root.toggleBluetoothRequested()
             onCyclePowerProfileRequested: root.cyclePowerProfileRequested()
@@ -96,6 +122,8 @@ MikoPageFlickable {
         }
 
         OverviewStatusCards {
+            visible: root.preferences.showOverviewDevices
+                || (root.preferences.showOverviewAttention && root.attentionVisible)
             style: root.style
             phoneReachable: root.kdeConnect.reachable
             phoneName: root.kdeConnect.deviceName || "Телефон"
@@ -126,6 +154,8 @@ MikoPageFlickable {
                 || root.updates.count > 0
                 || root.systemState.rootDiskUsed >= 0.88
                     ? "system" : "services"
+            showDevices: root.preferences.showOverviewDevices
+            showAttention: root.preferences.showOverviewAttention
             onNavigateRequested: pageId =>
                 root.navigateRequested(pageId)
         }

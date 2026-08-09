@@ -91,7 +91,7 @@ ColumnLayout {
                             72,
                             modelData.height * topologyCanvas.fitScale
                         )
-                        radius: 16
+                        radius: root.style.radiusControl
                         color: root.controller.selectedIndex === index
                             ? root.style.selectedSurface
                             : root.style.sectionSurface
@@ -194,7 +194,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: 116
-        radius: 24
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         border.width: 1
         border.color: root.style.hairline

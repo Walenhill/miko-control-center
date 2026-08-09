@@ -61,7 +61,7 @@ ColumnLayout {
                     Rectangle {
                         implicitWidth: internetState.implicitWidth + 22
                         implicitHeight: 34
-                        radius: 14
+                        radius: Appearance.rounding.full
                         color: root.style.controlSurface
                         StyledText {
                             id: internetState
@@ -138,7 +138,7 @@ ColumnLayout {
                     Rectangle {
                         implicitWidth: tunnelState.implicitWidth + 22
                         implicitHeight: 34
-                        radius: 14
+                        radius: Appearance.rounding.full
                         color: root.controller.tunnelActive
                             ? root.style.accentContainer
                             : root.style.controlSurface

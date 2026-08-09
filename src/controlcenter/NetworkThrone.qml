@@ -42,7 +42,7 @@ ColumnLayout {
         Rectangle {
             implicitWidth: stateLabel.implicitWidth + 24
             implicitHeight: 36
-            radius: 15
+            radius: Appearance.rounding.full
             color: root.throne.running
                 ? root.style.accentContainer : root.style.controlSurface
             StyledText {
@@ -195,7 +195,7 @@ ColumnLayout {
                         required property var modelData
                         implicitWidth: modeLabel.implicitWidth + 24
                         implicitHeight: 36
-                        radius: 15
+                        radius: Appearance.rounding.full
                         color: modelData[1]
                             ? root.style.accentContainer
                             : root.style.controlSurface
