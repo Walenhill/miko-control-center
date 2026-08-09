@@ -117,7 +117,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: 74
-        radius: 21
+        radius: root.style.radiusSection
         color: "transparent"
         border.width: 1
         border.color: root.style.hairline

@@ -170,6 +170,33 @@ QtObject {
 
     readonly property var integrationCatalog: [
         {
+            id: "throne",
+            packageName: "throne",
+            title: "Throne",
+            subtitle: "TUN, маршрутизация и защищённое соединение",
+            icon: "vpn_lock",
+            pageId: "network",
+            source: "AUR"
+        },
+        {
+            id: "smartmontools",
+            packageName: "smartmontools",
+            title: "SMART",
+            subtitle: "Здоровье накопителей и ранние предупреждения",
+            icon: "hard_drive",
+            pageId: "system",
+            source: "pacman"
+        },
+        {
+            id: "ddcutil",
+            packageName: "ddcutil",
+            title: "DDC/CI",
+            subtitle: "Аппаратная яркость внешних мониторов",
+            icon: "brightness_6",
+            pageId: "displays",
+            source: "pacman"
+        },
+        {
             id: "kdeconnect",
             packageName: "kdeconnect",
             title: "KDE Connect",
@@ -296,14 +323,23 @@ QtObject {
             serviceMessageTimer.restart();
             return;
         }
-        if (rejectAction(
-                "Установка интеграции",
-                ["kitty", "pacman", "pkexec"]))
+        const aur = String(component.source).toLowerCase() === "aur";
+        const helper = capabilities.has("paru") ? "paru"
+            : capabilities.has("yay") ? "yay" : "";
+        if (aur && helper === "") {
+            actionMessage = "Для AUR-интеграции нужен paru или yay";
+            serviceMessageTimer.restart();
             return;
+        }
+        if (rejectAction("Установка интеграции", aur
+                ? ["kitty", helper] : ["kitty", "pacman", "pkexec"]))
+            return;
+        const installCommand = aur
+            ? helper + " -S --needed -- " + packageName
+            : "pkexec pacman -S --needed -- " + packageName;
         Quickshell.execDetached([
             "kitty", "-e", "bash", "-lc",
-            "pkexec pacman -S --needed -- " + packageName
-                + "; echo; read -rp 'Enter для закрытия'"
+            installCommand + "; echo; read -rp 'Enter для закрытия'"
         ]);
     }
 
@@ -545,6 +581,9 @@ QtObject {
         command: ["sh", "-c", `
             printf "CHECKED|%s\\n" "$(date +%s)"
             for spec in \
+                "throne|throne" \
+                "smartmontools|smartmontools" \
+                "ddcutil|ddcutil" \
                 "kdeconnect|kdeconnect" \
                 "easyeffects|easyeffects" \
                 "syncthing|syncthing" \

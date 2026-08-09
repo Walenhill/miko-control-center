@@ -16,7 +16,7 @@ Rectangle {
     visible: active
     Layout.fillWidth: true
     implicitHeight: 76
-    radius: 22
+    radius: root.style.radiusSection
     color: Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g,
                    Appearance.colors.colPrimary.b, 0.18)
     border.width: 1

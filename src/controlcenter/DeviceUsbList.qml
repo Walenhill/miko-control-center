@@ -55,7 +55,7 @@ ColumnLayout {
                 readonly property bool expanded: root.expandedDeviceId === modelData.id
                 Layout.fillWidth: true
                 implicitHeight: expanded ? 122 : 82
-                radius: 21
+                radius: root.style.radiusSection
                 color: root.style.sectionSurface
                 border.width: 1
                 border.color: root.style.hairline

@@ -19,6 +19,8 @@ GridLayout {
     required property string attentionTitle
     required property string attentionSubtitle
     required property string attentionPage
+    required property bool showDevices
+    required property bool showAttention
 
     signal navigateRequested(string pageId)
 
@@ -28,9 +30,11 @@ GridLayout {
     rowSpacing: 11
 
     MikoSurface {
+        visible: root.showDevices
         style: root.style
         Layout.fillWidth: true
-        Layout.columnSpan: root.columns === 2 && !root.attentionVisible ? 2 : 1
+        Layout.columnSpan: root.columns === 2
+            && (!root.attentionVisible || !root.showAttention) ? 2 : 1
         implicitHeight: 132
 
         ColumnLayout {
@@ -118,7 +122,7 @@ GridLayout {
     }
 
     MikoSurface {
-        visible: root.attentionVisible
+        visible: root.attentionVisible && root.showAttention
         style: root.style
         accented: true
         Layout.fillWidth: true

@@ -57,9 +57,11 @@ QtObject {
     readonly property color strongHairline: alpha(ink, 0.14)
     readonly property color focusRing: alpha(Appearance.colors.colPrimary, 0.72)
 
-    readonly property int radiusWindow: 30
-    readonly property int radiusSection: 24
-    readonly property int radiusControl: 16
+    // Three predictable geometry levels. A nested surface must never look
+    // rounder than the window containing it.
+    readonly property int radiusWindow: 24
+    readonly property int radiusSection: 20
+    readonly property int radiusControl: 14
     readonly property int gapSection: 16
     readonly property int gapControl: 10
 

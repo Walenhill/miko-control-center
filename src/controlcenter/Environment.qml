@@ -28,4 +28,12 @@ QtObject {
         localBin + "/miko-watch"
     readonly property string servicesState:
         controlCenterState + "/services.json"
+    readonly property string preferencesState:
+        controlCenterState + "/preferences.json"
+    readonly property string operationHistoryState:
+        controlCenterState + "/operations.json"
+    readonly property string snapshotRoot:
+        controlCenterState + "/snapshots"
+    readonly property string illogicalConfig:
+        configHome + "/illogical-impulse/config.json"
 }

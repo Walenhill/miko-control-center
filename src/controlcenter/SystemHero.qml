@@ -50,7 +50,7 @@ Rectangle {
             Rectangle {
                 implicitWidth: machineState.implicitWidth + 20
                 implicitHeight: 29
-                radius: 14
+                radius: Appearance.rounding.full
                 color: root.style.sectionSurface
 
                 RowLayout {
@@ -141,7 +141,7 @@ Rectangle {
 
                     implicitWidth: 128
                     implicitHeight: 62
-                    radius: 19
+                    radius: root.style.radiusControl
                     color: root.style.sectionSurface
 
                     RowLayout {

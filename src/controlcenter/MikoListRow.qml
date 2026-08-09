@@ -123,7 +123,6 @@ Item {
         enabled: root.interactive && root.available
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onPressed: root.forceActiveFocus()
         onClicked: root.clicked()
     }
 

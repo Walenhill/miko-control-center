@@ -138,7 +138,7 @@ Rectangle {
 
                 Layout.fillWidth: true
                 implicitHeight: 68
-                radius: 19
+                radius: root.style.radiusControl
                 color: root.style.hoverSurface
                 opacity: watchEvent.modelData.read ? 0.78 : 1
 

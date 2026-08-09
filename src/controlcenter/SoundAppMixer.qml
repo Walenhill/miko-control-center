@@ -47,7 +47,7 @@ ColumnLayout {
 
             Layout.fillWidth: true
             implicitHeight: 86
-            radius: 20
+            radius: root.style.radiusSection
             color: root.style.sectionSurface
             border.width: 1
             border.color: root.style.hairline
@@ -113,7 +113,7 @@ ColumnLayout {
         visible: root.audio.outputAppNodes.length === 0
         Layout.fillWidth: true
         implicitHeight: 82
-        radius: 20
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         antialiasing: true
         RowLayout {

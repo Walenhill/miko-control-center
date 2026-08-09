@@ -48,7 +48,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 76
-                radius: 21
+                radius: root.style.radiusSection
                 color: selected
                     ? root.style.selectedSurface
                     : (pointer.containsMouse ? root.style.hoverSurface : root.style.sectionSurface)

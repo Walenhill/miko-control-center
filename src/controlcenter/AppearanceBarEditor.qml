@@ -39,7 +39,7 @@ GridLayout {
 
                 width: root.columns === 2 ? 190 : sectionLabel.implicitWidth + 58
                 height: 46
-                radius: 17
+                radius: root.style.radiusControl
                 color: selected
                     ? root.style.selectedSurface
                     : (sectionMouse.containsMouse

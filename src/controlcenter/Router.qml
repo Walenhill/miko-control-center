@@ -9,6 +9,7 @@ QtObject {
     property string networkSection: "overview"
     property string appearanceEditor: ""
     property string selectedComponentId: ""
+    property string focusTarget: ""
 
     readonly property int currentPage: registry.indexOf(currentPageId)
     readonly property bool canGoBack:
@@ -28,7 +29,21 @@ QtObject {
             networkSection = "overview";
         appearanceEditor = "";
         selectedComponentId = "";
+        focusTarget = "";
         return nextPageId;
+    }
+
+    function openTarget(target) {
+        const pageId = target?.pageId || registry.defaultPageId;
+        openId(pageId);
+        focusTarget = target?.target || target?.section || "";
+        if (pageId === "network" && target?.section)
+            networkSection = target.section;
+        if (pageId === "appearance" && target?.section)
+            appearanceEditor = target.section;
+        if (pageId === "services" && target?.componentId)
+            selectedComponentId = target.componentId;
+        return pageId;
     }
 
     // Backward-compatible route kept for the public IPC open(int).

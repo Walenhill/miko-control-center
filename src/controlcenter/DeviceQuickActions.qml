@@ -41,7 +41,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 86
-                radius: 22
+                radius: root.style.radiusSection
                 color: !modelData.enabled
                     ? Qt.rgba(root.style.sectionSurface.r, root.style.sectionSurface.g,
                               root.style.sectionSurface.b, 0.45)

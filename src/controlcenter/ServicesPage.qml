@@ -15,6 +15,11 @@ MikoPageFlickable {
 
     Component.onCompleted: root.controller.active = true
     Component.onDestruction: root.controller.active = false
+    function revealSection(section) {
+        const target = section === "diagnostics"
+            ? diagnosticsSection : integrationsSection;
+        scrollTo(Math.max(0, target.y - 12));
+    }
 
     ColumnLayout {
         id: contentColumn
@@ -54,6 +59,7 @@ MikoPageFlickable {
         }
 
         ServicesIntegrationsSection {
+            id: integrationsSection
             Layout.fillWidth: true
             controller: root.controller
             style: root.style
@@ -61,6 +67,7 @@ MikoPageFlickable {
         }
 
         ServicesDiagnosticsSection {
+            id: diagnosticsSection
             controller: root.controller
             style: root.style
         }

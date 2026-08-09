@@ -46,7 +46,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 48
-                radius: 17
+                radius: root.style.radiusControl
                 color: selected ? root.style.selectedSurface : root.style.sectionSurface
                 antialiasing: true
 
@@ -98,7 +98,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 48
-                radius: 17
+                radius: root.style.radiusControl
                 color: selected ? root.style.selectedSurface : root.style.sectionSurface
                 antialiasing: true
 
@@ -155,7 +155,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 48
-                radius: 17
+                radius: root.style.radiusControl
                 color: selected ? root.style.selectedSurface : root.style.sectionSurface
                 antialiasing: true
 

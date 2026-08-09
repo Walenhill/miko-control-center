@@ -21,7 +21,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: dockRows.implicitHeight + 20
-        radius: 24
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         antialiasing: true
 
@@ -46,7 +46,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: overviewRows.implicitHeight + 20
-        radius: 24
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         antialiasing: true
 
@@ -71,7 +71,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: 134
-        radius: 24
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         antialiasing: true
 
@@ -91,7 +91,7 @@ ColumnLayout {
                 color: root.style.ink
                 font.family: Appearance.font.family.main
                 background: Rectangle {
-                    radius: 15
+                    radius: root.style.radiusControl
                     color: root.style.controlSurface
                 }
                 onEditingFinished:

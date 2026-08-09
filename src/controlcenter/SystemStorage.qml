@@ -110,7 +110,7 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 132
-                radius: 23
+                radius: root.style.radiusSection
                 color: root.style.sectionSurface
                 border.width: 1
                 border.color: Qt.rgba(

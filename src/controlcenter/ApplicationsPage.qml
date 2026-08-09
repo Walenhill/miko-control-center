@@ -8,6 +8,12 @@ MikoPageFlickable {
     required property var style
 
     contentHeight: contentColumn.implicitHeight
+    function revealSection(section) {
+        const target = section === "autostart" ? autostartSection
+            : section === "notifications" || section === "privacy"
+                ? notificationsSection : processesSection;
+        scrollTo(Math.max(0, target.y - 12));
+    }
     Component.onCompleted: root.controller.active = true
     Component.onDestruction: root.controller.active = false
 
@@ -17,6 +23,7 @@ MikoPageFlickable {
         spacing: 16
 
         ApplicationsProcessList {
+            id: processesSection
             style: root.style
             applications: root.controller.runningApplications
             selectedPid: root.controller.selectedPid
@@ -28,11 +35,13 @@ MikoPageFlickable {
         }
 
         ApplicationsAutostart {
+            id: autostartSection
             style: root.style
             entries: root.controller.autostartEntries
         }
 
         ApplicationsNotificationSettings {
+            id: notificationsSection
             style: root.style
             timeoutSeconds:
                 root.controller.notificationTimeoutSeconds

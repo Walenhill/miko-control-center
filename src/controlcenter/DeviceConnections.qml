@@ -51,7 +51,7 @@ ColumnLayout {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 92
-            radius: 23
+            radius: root.style.radiusSection
             color: root.style.sectionSurface
             border.width: 1
             border.color: root.style.hairline
@@ -98,7 +98,7 @@ ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true
                 implicitHeight: 92
-                radius: 23
+                radius: root.style.radiusSection
                 color: root.style.sectionSurface
                 border.width: 1
                 border.color: root.style.hairline

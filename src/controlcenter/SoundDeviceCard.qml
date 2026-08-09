@@ -59,7 +59,7 @@ Rectangle {
 
                 Layout.fillWidth: true
                 implicitHeight: 52
-                radius: 17
+                radius: root.style.radiusControl
                 color: selected
                     ? root.style.selectedSurface
                     : (pointer.containsMouse ? root.style.hoverSurface : "transparent")

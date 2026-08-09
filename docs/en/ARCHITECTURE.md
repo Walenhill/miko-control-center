@@ -63,6 +63,18 @@ explicit refresh.
 Missing optional tools should create an explained disabled state. They should
 not produce a button that fails after being clicked.
 
+## Cross-cutting UI services
+
+- `ControlCenterState` persists UI preferences only;
+- `OperationCenter` owns the shared task and feedback model;
+- `OperationBridge` maps domain-controller state into operations;
+- `SystemTelemetryController` and `SystemSnapshotsController` stay separate
+  from the large system controller and run only when their page requests work.
+
+Search passes a stable `target` to the destination page. That page implements
+`revealSection(target)` and owns its section geometry, so search routes never
+hard-code scroll coordinates in the composition root.
+
 ## Adding a setting
 
 1. Identify the owner of the value: shell configuration, controller or external

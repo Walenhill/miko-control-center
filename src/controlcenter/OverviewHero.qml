@@ -16,6 +16,7 @@ MikoSurface {
 
     Layout.fillWidth: true
     implicitHeight: 162
+    radius: root.style.radiusWindow
     accented: true
 
     RowLayout {
@@ -31,7 +32,7 @@ MikoSurface {
             Rectangle {
                 implicitWidth: healthText.implicitWidth + 24
                 implicitHeight: 30
-                radius: 15
+                radius: Appearance.rounding.full
                 color: root.style.controlSurface
 
                 RowLayout {

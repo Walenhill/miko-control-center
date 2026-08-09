@@ -61,7 +61,7 @@ ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true
                 implicitHeight: 82
-                radius: 22
+                radius: root.style.radiusSection
                 color: pointer.containsMouse
                     ? root.style.hoverSurface
                     : root.style.sectionSurface

@@ -14,7 +14,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: rows.implicitHeight + 20
-        radius: 24
+        radius: root.style.radiusSection
         color: root.style.sectionSurface
         antialiasing: true
 

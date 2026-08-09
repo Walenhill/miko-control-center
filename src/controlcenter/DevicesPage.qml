@@ -13,6 +13,11 @@ MikoPageFlickable {
     signal navigateRequested(string pageId)
 
     contentHeight: contentColumn.implicitHeight
+    function revealSection(section) {
+        const target = section === "connections" ? connectionsSection
+            : section === "usb" ? usbSection : phoneSection;
+        scrollTo(Math.max(0, target.y - 12));
+    }
     Component.onCompleted: root.controller.ensureLoaded()
 
     ColumnLayout {
@@ -21,6 +26,7 @@ MikoPageFlickable {
         spacing: 16
 
         DevicePhoneHero {
+            id: phoneSection
             kde: root.kde
             style: root.style
         }
@@ -29,6 +35,7 @@ MikoPageFlickable {
             style: root.style
         }
         DeviceConnections {
+            id: connectionsSection
             audio: root.audio
             bluetooth: root.bluetooth
             bluetoothStatus: root.bluetoothStatus
@@ -38,6 +45,7 @@ MikoPageFlickable {
                 root.controller.openBluetoothManager()
         }
         DeviceUsbList {
+            id: usbSection
             devices: root.controller.usbDevices
             busy: root.controller.usbBusy
             errorMessage: root.controller.usbError
