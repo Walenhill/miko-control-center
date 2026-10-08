@@ -12,7 +12,7 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: 16
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -44,7 +44,7 @@ ColumnLayout {
                     step: 1
                     suffix: I18n.tr(" сек.")
                     onChanged: value =>
-                        Config.options.notifications.timeout = value * 1000
+                        AppearanceChanges.setOption("notifications.timeout", value * 1000, title)
                 }
                 MikoToggleRow {
                     style: root.style
@@ -53,7 +53,7 @@ ColumnLayout {
                     icon: "monitor"
                     checked: Config.options.notifications.monitor.enable
                     onToggled: checked =>
-                        Config.options.notifications.monitor.enable = checked
+                        AppearanceChanges.setOption("notifications.monitor.enable", checked, title)
                 }
                 Item {
                     Layout.fillWidth: true
@@ -97,7 +97,7 @@ ColumnLayout {
                                     border.color: root.style.hairline
                                 }
                                 onEditingFinished:
-                                    Config.options.notifications.monitor.name = text.trim()
+                                    AppearanceChanges.setOption("notifications.monitor.name", text.trim())
                             }
                         }
                     }

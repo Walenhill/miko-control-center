@@ -4,6 +4,9 @@
 
 Current release: **Cadence · v1.0.0** — [release notes / upgrade guide](docs/RELEASE-1.0.0.md).
 
+Development update: **Silverstar 1.1** — [what changed / limitations](docs/UPDATE-1.1.md).
+Available on `codex/silverstar-convenience-1.1`; not a tagged release yet.
+
 A desktop-first control center for a customized Linux system built with
 [Quickshell](https://quickshell.org/), Qt Quick and the
 `illogical-impulse` (`ii`) shell runtime.

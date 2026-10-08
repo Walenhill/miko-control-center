@@ -87,6 +87,7 @@ ColumnLayout {
                     style: root.style
                     icon: "wallpaper"
                     text: I18n.tr("Выбрать обои")
+                    enabled: !root.controller.busy
                     onClicked: root.controller.chooseWallpaper()
                 }
                 MikoButton {
@@ -133,7 +134,8 @@ ColumnLayout {
                         style: root.style
                         text: modelData.title
                         icon: modelData.icon
-                        selected: Appearance.m3colors.darkmode === modelData.dark
+                        selected: root.controller.darkSelection === modelData.dark
+                        enabled: !root.controller.materialIntegration.busy
                         onClicked: root.controller.setDarkMode(modelData.dark)
                     }
                 }
@@ -142,13 +144,13 @@ ColumnLayout {
             MikoToggleRow {
                 style: root.style
                 title: I18n.tr("Прозрачность")
-                subtitle: Config.options.appearance.transparency.enable
-                    ? I18n.tr("Обои проходят через поверхности интерфейса")
-                    : I18n.tr("Интерфейс использует сплошные поверхности")
+                subtitle: root.controller.materialMode === "off" ? I18n.tr("Интерфейс использует сплошные поверхности")
+                    : root.controller.materialMode === "auto" ? I18n.tr("Авто · по обоям") : I18n.tr("Вручную · общий фон оболочки")
                 icon: "ev_shadow"
                 checked: Config.options.appearance.transparency.enable
+                available: !root.controller.busy
                 onToggled: checked =>
-                    Config.options.appearance.transparency.enable = checked
+                    AppearanceChanges.setOption("appearance.transparency.enable", checked, title)
             }
 
             RowLayout {
@@ -197,9 +199,14 @@ ColumnLayout {
                         icon: ""
                         selected:
                             root.controller.paletteSelection === modelData.value
+                        enabled: !root.controller.materialIntegration.busy
                         onClicked: root.controller.applyPalette(modelData.value)
                     }
                 }
+            }
+            MikoButton {
+                style: root.style; text: I18n.tr("Прозрачность и блюр"); icon: "blur_on"
+                onClicked: root.controller.openEditor("materials")
             }
         }
     }
@@ -229,6 +236,18 @@ ColumnLayout {
                         subtitle: Config.options.appearance.fonts.main
                             + I18n.tr(" · dock, overview и экранные элементы"),
                         icon: "widgets", editor: "interface"
+                    },
+                    {
+                        title: I18n.tr("Виджеты рабочего стола"),
+                        subtitle: I18n.tr("Часы, погода и расположение"), icon: "schedule", editor: "widgets"
+                    },
+                    {
+                        title: I18n.tr("Шрифты и типографика"),
+                        subtitle: I18n.tr("Роли шрифтов и предпросмотр"), icon: "text_fields", editor: "fonts"
+                    },
+                    {
+                        title: I18n.tr("Профили оформления"),
+                        subtitle: I18n.tr("Сохранение и перенос внешнего вида"), icon: "palette", editor: "profiles"
                     }
                 ]
                 delegate: MikoListRow {
@@ -240,7 +259,7 @@ ColumnLayout {
                     icon: modelData.icon
                     showChevron: true
                     interactive: true
-                    dividerVisible: index < 1
+                    dividerVisible: index < 4
                     onClicked: root.controller.openEditor(modelData.editor)
                 }
             }

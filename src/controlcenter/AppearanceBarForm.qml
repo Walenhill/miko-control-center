@@ -11,7 +11,7 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: 16
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -71,8 +71,8 @@ ColumnLayout {
                             }
                         }
                         onClicked: {
-                            Config.options.bar.bottom = positionChoice.modelData.bottom;
-                            Config.options.bar.vertical = positionChoice.modelData.vertical;
+                            AppearanceChanges.setOptions({"bar.bottom": positionChoice.modelData.bottom,
+                                "bar.vertical": positionChoice.modelData.vertical}, I18n.tr("Положение панели"));
                         }
                     }
                 }
@@ -80,7 +80,7 @@ ColumnLayout {
         }
     }
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -137,14 +137,14 @@ ColumnLayout {
                                 font.weight: shapeChoice.selected ? Font.DemiBold : Font.Normal
                             }
                         }
-                        onClicked: Config.options.bar.cornerStyle = shapeChoice.modelData.value
+                        onClicked: AppearanceChanges.setOption("bar.cornerStyle", shapeChoice.modelData.value)
                     }
                 }
             }
         }
     }
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -194,7 +194,7 @@ ColumnLayout {
                             font.weight: cornersChoice.selected ? Font.DemiBold : Font.Normal
                         }
                         onClicked:
-                            Config.options.appearance.fakeScreenRounding = cornersChoice.modelData.value
+                            AppearanceChanges.setOption("appearance.fakeScreenRounding", cornersChoice.modelData.value)
                     }
                 }
             }

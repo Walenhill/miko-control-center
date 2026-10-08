@@ -4,6 +4,9 @@
 
 Текущий релиз: **Cadence · v1.0.0** — [изменения и обновление](docs/RELEASE-1.0.0.md).
 
+Обновление в разработке: **Silverstar 1.1** — [изменения и ограничения](docs/UPDATE-1.1.md).
+Доступно в ветке `codex/silverstar-convenience-1.1`; отдельного релизного тега пока нет.
+
 Десктопный центр управления для кастомной Linux-системы, написанный на
 [Quickshell](https://quickshell.org/), Qt Quick и runtime оболочки
 `illogical-impulse` (`ii`).

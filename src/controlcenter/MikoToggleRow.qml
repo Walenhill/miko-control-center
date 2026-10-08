@@ -74,7 +74,9 @@ Item {
             Layout.preferredWidth: root.width >= 540 ? root.controlRailWidth : 112
             implicitHeight: 42
 
-            StyledSwitch {
+            MikoSwitch {
+                style: root.ui
+                Accessible.name: root.title
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter

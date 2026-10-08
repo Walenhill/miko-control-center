@@ -1,5 +1,29 @@
 # Changelog
 
+## Silverstar · 1.1.0 - Unreleased
+
+Development update: [English / Русский](docs/UPDATE-1.1.md).
+
+- Refine the shared form into a single window plane with quiet navigation,
+  flat settings groups, soft rectangular buttons, compound steppers and a
+  common keyboard-accessible switch; preserve live palette and material settings.
+- Soften scrolling boundaries with a viewport-sized alpha mask shared by all
+  pages; reveal first/last content fully at the ends without tinting materials.
+
+- Remember each page's last tab, nested destination and scroll position within the session, without keeping hidden pages alive.
+- Add keyboard search selection, localized categories and bilingual search aliases independent of the interface language.
+- Show pending and applied appearance states; offer guarded undo for direct appearance settings and successful theme changes.
+- Add navigation/search and mock-generator runtime regression checks, plus search and grouped-undo logic tests.
+- Expand Appearance with a queued custom HEX/eyedropper accent, automatic/manual surface transparency, desktop clock/weather/quote controls and schematic drag placement.
+- Add an installed-font picker with role-specific previews, including digital-clock typography.
+- Add scoped, versioned portable appearance profiles with local storage, strict JSON import/export, missing-font reporting and grouped undo.
+- Lazy-load the new appearance editors; do not add preview timers or background polling.
+- Use a genuinely transparent window and compositor blur instead of a wallpaper-copy blur; apply surface alpha without hidden caps or palette RGB shifts.
+- Separate off/auto/manual transparency, show effective values and add explicit, guarded native blur controls.
+- Add optional miko-theme protocol 1 integration: serialized color refresh preserves shell materials, while full presets require explicit confirmation; include migration patches.
+- Document and provide a native Quickshell layer-blur policy without high alpha cutoffs that disable blur on translucent panels or crop rounded edges; exclude technical canvases.
+- Exclude the Qt shadow fringe from layer blur to prevent halos outside rounded surfaces, and add an opt-in shadow/translucency checkerboard probe.
+
 ## Cadence · 1.0.0 - 2026-10-08
 
 Release notes: [English / Русский](docs/RELEASE-1.0.0.md).

@@ -11,9 +11,9 @@ Rectangle {
 
     implicitWidth: 44
     implicitHeight: 44
-    radius: Appearance.rounding.full
+    radius: style.radiusIcon
     color: accented ? style.selectedSurface : style.controlSurface
-    border.width: 1
+    border.width: accented ? 0 : 1
     border.color: accented
         ? style.alpha(style.selectedSurface, 0.42)
         : style.hairline

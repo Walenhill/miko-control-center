@@ -12,6 +12,12 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: 16
 
+    Loader {
+        Layout.fillWidth: true
+        active: root.visible
+        sourceComponent: AppearanceMaterialsEditor { controller: root.controller; style: root.style }
+    }
+
     readonly property var paletteModes: [
         { title: I18n.tr("Авто"), value: "auto" },
         { title: I18n.tr("Контекст"), value: "scheme-content" },
@@ -24,7 +30,7 @@ ColumnLayout {
         { title: I18n.tr("Тональное пятно"), value: "scheme-tonal-spot" }
     ]
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -56,6 +62,7 @@ ColumnLayout {
 
                         width: paletteText.implicitWidth + 28
                         height: 42
+                        radius: root.style.radiusControl
                         style: root.style
                         interactive: true
                         softAccent: selected

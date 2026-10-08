@@ -10,6 +10,7 @@ Rectangle {
     property alias text: label.text
     property alias icon: symbol.text
     property bool selected: false
+    property bool quiet: false
     readonly property bool hasIcon: symbol.text !== ""
     readonly property bool hasText: label.text !== ""
     readonly property bool iconOnly: hasIcon && !hasText
@@ -17,10 +18,13 @@ Rectangle {
     readonly property bool hovered: pointer.containsMouse
     signal clicked()
 
-    implicitHeight: 42
+    implicitHeight: style.controlHeight
     implicitWidth: iconOnly ? implicitHeight : content.implicitWidth + 28
-    radius: Appearance.rounding.full
+    radius: iconOnly ? Math.min(width, height) / 2 : style.radiusControl
     activeFocusOnTab: enabled
+    Accessible.role: Accessible.Button
+    Accessible.name: hasText ? label.text : symbol.text
+    Accessible.onPressAction: if (enabled) root.clicked()
     opacity: enabled ? 1 : 0.42
     color: selected
         ? pressed
@@ -32,8 +36,8 @@ Rectangle {
             ? style.activeSurface
             : hovered
                 ? style.hoverSurface
-                : style.sectionSurface
-    border.width: activeFocus ? 2 : 1
+                : quiet ? "transparent" : style.sectionSurface
+    border.width: activeFocus ? 2 : quiet || selected ? 0 : 1
     border.color: activeFocus
         ? style.focusRing
         : selected

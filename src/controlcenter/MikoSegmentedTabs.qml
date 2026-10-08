@@ -15,10 +15,9 @@ Rectangle {
 
     implicitHeight: 44
     implicitWidth: tabRow.implicitWidth + 8
-    radius: Appearance.rounding.full
-    color: root.ui.sectionSurface
-    border.width: 1
-    border.color: root.ui.hairline
+    radius: root.ui.radiusControl
+    color: root.ui.controlSurface
+    border.width: 0
     antialiasing: true
 
     RowLayout {
@@ -58,7 +57,7 @@ Rectangle {
 
                 Layout.fillHeight: true
                 Layout.preferredWidth: tabContent.implicitWidth + 28
-                radius: Appearance.rounding.full
+                radius: root.ui.radiusSegment
 
                 color: isSelected
                     ? root.ui.selectedSurface

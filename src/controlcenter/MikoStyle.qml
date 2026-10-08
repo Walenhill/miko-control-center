@@ -1,7 +1,14 @@
 import QtQuick
 import qs.modules.common
+import "MaterialMath.js" as Materials
 
 QtObject {
+    property var transparencySettings: Config.options.appearance.transparency
+    property real automaticBackground: Appearance.autoBackgroundTransparency
+    property real automaticContent: Appearance.autoContentTransparency
+    readonly property var materialOpacities: Materials.opacities(transparencySettings, automaticBackground, automaticContent)
+    readonly property real backgroundOpacity: materialOpacities.background
+    readonly property real contentOpacity: materialOpacities.content
     property bool reducedMotion: false
     function alpha(color, value) {
         return Qt.rgba(color.r, color.g, color.b, value);
@@ -21,30 +28,29 @@ QtObject {
     readonly property color mutedInk: alpha(ink, 0.64)
     readonly property color disabledInk: alpha(ink, 0.38)
     readonly property color windowSurface: Qt.rgba(
-        Appearance.colors.colLayer0.r,
-        Appearance.colors.colLayer0.g,
-        Appearance.colors.colLayer0.b,
-        0.82
+        Appearance.colors.colLayer0Base.r,
+        Appearance.colors.colLayer0Base.g,
+        Appearance.colors.colLayer0Base.b,
+        backgroundOpacity
     )
     readonly property color sectionSurface: Qt.rgba(
-        Appearance.colors.colLayer1.r,
-        Appearance.colors.colLayer1.g,
-        Appearance.colors.colLayer1.b,
-        0.92
+        Appearance.colors.colLayer1Base.r,
+        Appearance.colors.colLayer1Base.g,
+        Appearance.colors.colLayer1Base.b,
+        contentOpacity
     )
     readonly property color controlSurface: Qt.rgba(
-        Appearance.colors.colLayer2.r,
-        Appearance.colors.colLayer2.g,
-        Appearance.colors.colLayer2.b,
-        0.96
+        Appearance.colors.colLayer2Base.r,
+        Appearance.colors.colLayer2Base.g,
+        Appearance.colors.colLayer2Base.b,
+        contentOpacity
     )
     readonly property color cardSurface: sectionSurface
-    // Keep interaction states opaque. Shell hover colors intentionally inherit
-    // global transparency, which made cards visually disappear on hover.
+    // Hover changes tint, not opacity: materials remain stable during input.
     readonly property color hoverSurface:
-        mixOpaque(Appearance.colors.colLayer1Base, ink, 0.06)
+        alpha(mixOpaque(Appearance.colors.colLayer1Base, ink, 0.06), contentOpacity)
     readonly property color activeSurface:
-        mixOpaque(Appearance.colors.colLayer1Base, ink, 0.11)
+        alpha(mixOpaque(Appearance.colors.colLayer1Base, ink, 0.11), contentOpacity)
     // Strong accent is reserved for an actual choice or primary action.
     readonly property color selectedSurface: Appearance.colors.colPrimary
     readonly property color selectedSurfaceHover:
@@ -69,8 +75,12 @@ QtObject {
     // Three predictable geometry levels. A nested surface must never look
     // rounder than the window containing it.
     readonly property int radiusWindow: 24
-    readonly property int radiusSection: 20
-    readonly property int radiusControl: 14
+    readonly property int radiusSection: 18
+    readonly property int radiusControl: 12
+    readonly property int radiusNavigation: 14
+    readonly property int radiusSegment: 10
+    readonly property int radiusIcon: 14
+    readonly property int controlHeight: 42
     readonly property int gapSection: 16
     readonly property int gapControl: 10
     readonly property int cardPadding: 16

@@ -60,7 +60,9 @@ ColumnLayout {
                             && !root.controller.effectsInstallBusy
                         onClicked: root.controller.installEffects()
                     }
-                    StyledSwitch {
+                    MikoSwitch {
+                        style: root.style
+                        Accessible.name: "EasyEffects"
                         visible: root.effects.available
                         checked: root.effects.active
                         onClicked: root.effects.toggle()

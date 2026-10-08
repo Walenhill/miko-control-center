@@ -11,7 +11,7 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: 16
 
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -38,7 +38,7 @@ ColumnLayout {
                     subtitle: I18n.tr("Освобождать место для окон")
                     icon: "visibility_off"
                     checked: Config.options.bar.autoHide.enable
-                    onToggled: checked => Config.options.bar.autoHide.enable = checked
+                    onToggled: checked => AppearanceChanges.setOption("bar.autoHide.enable", checked, title)
                 }
                 MikoToggleRow {
                     style: root.style
@@ -47,7 +47,7 @@ ColumnLayout {
                     icon: "vertical_align_center"
                     checked: Config.options.bar.autoHide.pushWindows
                     available: Config.options.bar.autoHide.enable
-                    onToggled: checked => Config.options.bar.autoHide.pushWindows = checked
+                    onToggled: checked => AppearanceChanges.setOption("bar.autoHide.pushWindows", checked, title)
                 }
                 MikoToggleRow {
                     style: root.style
@@ -56,21 +56,21 @@ ColumnLayout {
                     checked: Config.options.bar.autoHide.showWhenPressingSuper.enable
                     available: Config.options.bar.autoHide.enable
                     onToggled: checked =>
-                        Config.options.bar.autoHide.showWhenPressingSuper.enable = checked
+                        AppearanceChanges.setOption("bar.autoHide.showWhenPressingSuper.enable", checked, title)
                 }
                 MikoToggleRow {
                     style: root.style
                     title: I18n.tr("Фон панели")
                     icon: "background_replace"
                     checked: Config.options.bar.showBackground
-                    onToggled: checked => Config.options.bar.showBackground = checked
+                    onToggled: checked => AppearanceChanges.setOption("bar.showBackground", checked, title)
                 }
                 MikoToggleRow {
                     style: root.style
                     title: I18n.tr("Без границ")
                     icon: "border_clear"
                     checked: Config.options.bar.borderless
-                    onToggled: checked => Config.options.bar.borderless = checked
+                    onToggled: checked => AppearanceChanges.setOption("bar.borderless", checked, title)
                 }
             }
         }

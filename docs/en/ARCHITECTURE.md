@@ -12,12 +12,21 @@ Reusable components are prefixed with `Miko`:
 
 - `MikoStyle` owns colors, radii, spacing and motion;
 - `MikoSurface` and `MikoButton` define interactive surface behavior;
+- `MikoSettingsGroup` keeps structural groups on the window plane; reserve
+  `MikoSurface` for bounded previews, summaries and actionable cards;
+- `MikoSwitch` shares the control geometry, focus state and reduced-motion
+  timing with buttons and compound steppers;
 - `MikoListGroup` and `MikoListRow` define settings lists;
 - `MikoToggleRow` and `MikoStepperRow` define common settings;
 - `MikoPageFlickable` owns scrolling and keyboard navigation.
 
 A page should extend an existing primitive before inventing a visually
 incompatible copy.
+
+The application has one outer window frame, not a second framed content window.
+Navigation uses a quiet accent fill and an edge indicator. Text buttons use the
+shared control radius; circles are reserved for icon-only actions and switch
+thumbs. Keep pane, section, control and segment radii in `MikoStyle`.
 
 Pass the window's `MikoStyle` into components. Optional styles use the shared
 `DefaultStyle` singleton, not a new fallback instance per card. Endless
@@ -60,6 +69,12 @@ Run `scripts/check.sh` for Qt 6 syntax, translation placeholders and backend
 tests. Run `scripts/smoke.sh` in a Wayland session to load every source page in
 RU and EN against the installed ii imports. It uses temporary control-center
 state and does not restart the main shell. Syntax-only lint is not a runtime pass.
+
+For opt-in visual QA, `bash scripts/render-ui.sh /absolute/output.png` renders
+the actual application with private UI state and input-transparent windows.
+`MIKO_RENDER_PAGE` and `MIKO_RENDER_EDITOR` choose the route. No controls are
+clicked and theme generation is suppressed. The PNG captures Qt surfaces, not
+the compositor's desktop blur.
 
 `tools/check-updates.sh` returns separate JSON statuses for repository and AUR
 queries. A failed source must never be reported as an up-to-date system.

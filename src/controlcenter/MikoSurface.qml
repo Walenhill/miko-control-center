@@ -11,6 +11,8 @@ Rectangle {
     property bool accented: false
     property bool softAccent: false
     property bool outlined: true
+    // Settings groups belong to the window plane; cards retain a soft surface.
+    property bool flat: false
     readonly property bool hovered:
         interactive && pointer.containsMouse
     readonly property bool pressed:
@@ -18,7 +20,7 @@ Rectangle {
     signal clicked()
 
     radius: ui.radiusSection
-    color: accented
+    color: flat ? "transparent" : accented
         ? ui.accentContainer
         : softAccent
             ? ui.accentSubtle
@@ -27,7 +29,7 @@ Rectangle {
                 : hovered
                     ? ui.hoverSurface
                     : ui.sectionSurface
-    border.width: activeFocus ? 2 : outlined ? 1 : 0
+    border.width: activeFocus ? 2 : outlined && !flat ? 1 : 0
     border.color: accented
         ? ui.alpha(ui.selectedSurface, 0.38)
         : softAccent

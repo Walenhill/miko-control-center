@@ -23,6 +23,7 @@ MikoPageFlickable {
 
         ColumnLayout {
             visible: root.controller.editor !== ""
+            enabled: !root.controller.optionsLocked
             Layout.fillWidth: true
             Layout.maximumWidth: 980
             Layout.alignment: Qt.AlignHCenter
@@ -45,6 +46,7 @@ MikoPageFlickable {
             AppearanceInterfaceEditor {
                 visible: root.controller.editor === "interface"
                 preferences: root.preferences
+                controller: root.controller
                 style: root.style
             }
             AppearanceNotificationsEditor {
@@ -58,6 +60,30 @@ MikoPageFlickable {
             AppearanceAdvancedEditor {
                 visible: root.controller.editor === "advanced"
                 style: root.style
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: root.controller.editor === "materials"
+                visible: active
+                sourceComponent: AppearanceMaterialsEditor { controller: root.controller; style: root.style; showAccent: false }
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: root.controller.editor === "widgets"
+                visible: active
+                sourceComponent: AppearanceWidgetsEditor { style: root.style }
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: root.controller.editor === "fonts"
+                visible: active
+                sourceComponent: AppearanceFontsEditor { style: root.style }
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: root.controller.editor === "profiles"
+                visible: active
+                sourceComponent: AppearanceProfilesEditor { style: root.style; controller: root.controller }
             }
         }
     }

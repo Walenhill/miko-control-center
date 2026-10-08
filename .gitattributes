@@ -1,0 +1,2 @@
+# Unified diff context lines contain a required leading space, even when empty.
+integrations/miko-theme/*.patch whitespace=-blank-at-eol
