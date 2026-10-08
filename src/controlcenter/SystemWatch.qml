@@ -6,56 +6,25 @@ import qs.modules.common.widgets
 Rectangle {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
 
     signal sectionRequested(string section)
     signal navigateRequested(string pageId)
 
     implicitHeight: watchInboxContent.implicitHeight + 28
-    radius: root.style.radiusSection
+    radius: root.ui.radiusSection
     color: root.controller.watchActiveCount > 0
-        ? Qt.rgba(
-            Appearance.colors.colPrimary.r,
-            Appearance.colors.colPrimary.g,
-            Appearance.colors.colPrimary.b,
-            0.13
-        )
-        : root.style.sectionSurface
+        ? root.ui.selectedCardBackground
+        : root.ui.sectionSurface
     border.width: 1
     border.color: root.controller.watchEvents.some(
-        event => !event.resolved && !event.ignored
-            && event.severity === "critical"
-    ) ? Qt.rgba(
-        Appearance.colors.colError.r,
-        Appearance.colors.colError.g,
-        Appearance.colors.colError.b,
-        0.42
-    ) : Qt.rgba(
-        root.style.ink.r,
-        root.style.ink.g,
-        root.style.ink.b,
-        0.06
-    )
+        event => !event.resolved && !event.ignored && event.severity === "critical"
+    ) ? root.ui.alpha(Appearance.colors.colError, 0.40)
+      : root.ui.hairline
     antialiasing: true
-
-    component LabelText: StyledText {
-        color: root.style.ink
-        font.pixelSize: Appearance.font.pixelSize.small
-    }
-
-    component MutedText: StyledText {
-        color: root.style.mutedInk
-        font.pixelSize: Appearance.font.pixelSize.smaller
-    }
-
-    component IconDisc: MikoIconDisc {
-        style: root.style
-    }
-
-    component SoftButton: MikoButton {
-        style: root.style
-    }
 
     ColumnLayout {
         id: watchInboxContent
@@ -64,64 +33,67 @@ Rectangle {
             left: parent.left
             right: parent.right
             top: parent.top
-            margins: 14
+            margins: 16
         }
-        spacing: 8
+        spacing: 12
 
         RowLayout {
             Layout.fillWidth: true
+            spacing: 12
 
-            IconDisc {
+            MikoIconDisc {
+                style: root.ui
                 icon: "visibility"
                 accented: root.controller.watchActiveCount > 0
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 0
+                spacing: 2
 
-                LabelText {
+                StyledText {
                     text: "Miko Watch"
-                    font.pixelSize: Appearance.font.pixelSize.larger
+                    color: root.ui.ink
+                    font.pixelSize: Appearance.font.pixelSize.normal
                     font.weight: Font.DemiBold
                 }
 
-                MutedText {
+                StyledText {
                     text: root.controller.watchActiveCount > 0
-                        ? root.controller.watchActiveCount
-                            + " активных · "
-                            + root.controller.watchUnreadCount + " новых"
-                        : "Новых системных событий нет"
-                            + (root.controller.watchIgnoredCount > 0
-                                ? " · "
-                                    + root.controller.watchIgnoredCount
-                                    + " скрыто"
-                                : "")
+                        ? root.controller.watchActiveCount + I18n.tr(" активных · ") + root.controller.watchUnreadCount + I18n.tr(" новых")
+                        : I18n.tr("Новых системных событий нет") + (root.controller.watchIgnoredCount > 0 ? " · " + root.controller.watchIgnoredCount + I18n.tr(" скрыто") : "")
+                    color: root.ui.mutedInk
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
 
-            MutedText {
-                text: "Проверено " + root.controller.watchLastScan
+            StyledText {
+                text: I18n.tr("Проверено ") + root.controller.watchLastScan
+                color: root.ui.mutedInk
+                font.pixelSize: Appearance.font.pixelSize.smaller
             }
 
-            SoftButton {
+            MikoButton {
+                style: root.ui
                 icon: "refresh"
-                text: "Проверить"
+                text: I18n.tr("Проверить")
                 enabled: !root.controller.watchAction.running
                 onClicked: root.controller.scanWatch()
             }
 
-            SoftButton {
+            MikoButton {
+                style: root.ui
                 visible: root.controller.watchUnreadCount > 0
                 icon: "done_all"
-                text: "Прочитано"
+                text: I18n.tr("Прочитано")
                 onClicked: root.controller.markAllWatchRead()
             }
 
-            SoftButton {
+            MikoButton {
+                style: root.ui
                 visible: root.controller.watchIgnoredCount > 0
                 icon: "visibility"
-                text: "Вернуть скрытые"
+                text: I18n.tr("Вернуть скрытые")
                 onClicked: root.controller.restoreIgnoredWatchEvents()
             }
         }
@@ -133,27 +105,28 @@ Rectangle {
 
             delegate: Rectangle {
                 id: watchEvent
-
                 required property var modelData
 
                 Layout.fillWidth: true
-                implicitHeight: 68
-                radius: root.style.radiusControl
-                color: root.style.hoverSurface
+                implicitHeight: 64
+                radius: root.ui.radiusControl
+                color: root.ui.hoverSurface
+                border.width: 1
+                border.color: root.ui.hairline
                 opacity: watchEvent.modelData.read ? 0.78 : 1
+                antialiasing: true
 
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: 13
-                        rightMargin: 10
+                        leftMargin: 14
+                        rightMargin: 12
                     }
-                    spacing: 11
+                    spacing: 12
 
                     MaterialSymbol {
-                        text: watchEvent.modelData.severity === "critical"
-                            ? "error" : "warning"
-                        iconSize: 21
+                        text: watchEvent.modelData.severity === "critical" ? "error" : "warning"
+                        iconSize: 20
                         color: watchEvent.modelData.severity === "critical"
                             ? Appearance.colors.colError
                             : Appearance.colors.colPrimary
@@ -162,30 +135,31 @@ Rectangle {
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        spacing: 0
+                        spacing: 2
 
-                        LabelText {
+                        StyledText {
                             Layout.fillWidth: true
                             text: watchEvent.modelData.title
-                            font.weight: watchEvent.modelData.read
-                                ? Font.Normal : Font.DemiBold
+                            color: root.ui.ink
+                            font.weight: watchEvent.modelData.read ? Font.Normal : Font.DemiBold
                             elide: Text.ElideRight
                         }
 
-                        MutedText {
+                        StyledText {
                             Layout.fillWidth: true
                             text: watchEvent.modelData.detail
+                            color: root.ui.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                             elide: Text.ElideRight
                         }
                     }
 
-                    SoftButton {
+                    MikoButton {
+                        style: root.ui
                         icon: "arrow_forward"
-                        text: "Открыть"
+                        text: I18n.tr("Открыть")
                         onClicked: {
-                            root.controller.markWatchEventRead(
-                                watchEvent.modelData.id
-                            );
+                            root.controller.markWatchEventRead(watchEvent.modelData.id);
                             const action = watchEvent.modelData.action;
                             if (action === "storage" || action === "updates")
                                 root.sectionRequested(action);
@@ -198,12 +172,11 @@ Rectangle {
                         }
                     }
 
-                    SoftButton {
+                    MikoButton {
+                        style: root.ui
                         icon: "visibility_off"
-                        text: "Не напоминать"
-                        onClicked: root.controller.ignoreWatchEvent(
-                            watchEvent.modelData.id
-                        )
+                        text: I18n.tr("Скрыть")
+                        onClicked: root.controller.ignoreWatchEvent(watchEvent.modelData.id)
                     }
                 }
             }

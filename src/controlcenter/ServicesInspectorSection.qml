@@ -71,10 +71,10 @@ Rectangle {
     function serviceEnabledText() {
         const unit = componentValue("unit", "");
         if (unit === "")
-            return "не требуется";
+            return I18n.tr("не требуется");
         const state = controller.serviceStates[unit];
         return state !== undefined && state.enabled !== undefined
-            ? state.enabled : "неизвестно";
+            ? state.enabled : I18n.tr("неизвестно");
     }
 
     onSelectedComponentIdChanged: syncComponent()
@@ -177,7 +177,7 @@ Rectangle {
             spacing: 11
 
             LabelText {
-                text: "Что известно"
+                text: I18n.tr("Что известно")
                 font.weight: Font.DemiBold
             }
             GridLayout {
@@ -187,22 +187,22 @@ Rectangle {
                 rowSpacing: 10
 
                 MutedText {
-                    text: "Источник"
+                    text: I18n.tr("Источник")
                 }
                 LabelText {
                     text: root.componentValue("kind", "") === "integration"
-                        ? "Пакет системы" : "Пользовательская служба"
+                        ? I18n.tr("Пакет системы") : I18n.tr("Пользовательская служба")
                     font.weight: Font.Medium
                 }
                 MutedText {
-                    text: "Автозапуск"
+                    text: I18n.tr("Автозапуск")
                 }
                 LabelText {
                     text: root.serviceEnabledText()
                     font.weight: Font.Medium
                 }
                 MutedText {
-                    text: "Состояние"
+                    text: I18n.tr("Состояние")
                 }
                 LabelText {
                     text: root.controller.componentStateText(
@@ -224,7 +224,7 @@ Rectangle {
                     Layout.fillWidth: true
                     visible: root.componentValue("pageId", "") !== ""
                     icon: "tune"
-                    text: "Настроить"
+                    text: I18n.tr("Настроить")
                     onClicked: root.navigateRequested(
                         root.componentData.pageId
                     )
@@ -235,7 +235,7 @@ Rectangle {
                     icon: root.controller.componentActive(root.componentData)
                         ? "restart_alt" : "play_arrow"
                     text: root.controller.componentActive(root.componentData)
-                        ? "Перезапустить" : "Запустить"
+                        ? I18n.tr("Перезапустить") : I18n.tr("Запустить")
                     onClicked: root.controller.restartUserService(
                         root.componentData.unit
                     )
@@ -244,7 +244,7 @@ Rectangle {
                     Layout.fillWidth: true
                     visible: root.componentValue("unit", "") !== ""
                     icon: "article"
-                    text: "Журнал"
+                    text: I18n.tr("Журнал")
                     onClicked: root.controller.openServiceJournal(
                         root.componentData.unit
                     )
@@ -256,7 +256,7 @@ Rectangle {
                     ) ? "keep_off" : "keep"
                     text: root.controller.pinnedComponentIds.includes(
                         root.componentValue("id", "")
-                    ) ? "Убрать" : "Закрепить"
+                    ) ? I18n.tr("Убрать") : I18n.tr("Закрепить")
                     onClicked: root.controller.togglePin(
                         root.componentData.id
                     )

@@ -2,6 +2,8 @@
 
 **Русский** · [English version](README.md)
 
+Текущий релиз: **Cadence · v1.0.0** — [изменения и обновление](docs/RELEASE-1.0.0.md).
+
 Десктопный центр управления для кастомной Linux-системы, написанный на
 [Quickshell](https://quickshell.org/), Qt Quick и runtime оболочки
 `illogical-impulse` (`ii`).
@@ -60,6 +62,7 @@ Miko Control Center собирает повседневные настройки
 - Процессы, автозапуск, уведомления и активность приватных устройств.
 - Клавиатурная навигация, быстрая прокрутка и спокойные desktop-анимации.
 - Настраиваемый обзор, глубокий поиск, центр операций и снимки настроек.
+- Русский и английский интерфейс с переключением без перезапуска.
 
 Полная таблица возможностей находится в
 [docs/ru/FEATURES.md](docs/ru/FEATURES.md).
@@ -74,7 +77,8 @@ Miko Control Center собирает повседневные настройки
 - Hyprland;
 - Quickshell с runtime `illogical-impulse`;
 - PipeWire/WirePlumber;
-- пользовательские службы systemd.
+- пользовательские службы systemd;
+- Python 3 для проверяемых снимков настроек и `jq` для результатов проверки пакетов.
 
 Необязательные программы определяются автоматически, и часть интерфейса умеет
 переходить в понятное отключённое состояние. При этом проект **не является
@@ -85,6 +89,9 @@ Miko Control Center собирает повседневные настройки
 [docs/ru/LIMITATIONS.md](docs/ru/LIMITATIONS.md).
 Типовые проблемы запуска и интеграций разобраны в
 [docs/ru/TROUBLESHOOTING.md](docs/ru/TROUBLESHOOTING.md).
+
+Для проверяемых снимков настроек нужен Python 3, для результатов проверки
+обновлений — `jq`. Доступность команд проверяет `scripts/doctor.sh`.
 
 ## Установка
 
@@ -169,6 +176,8 @@ qs -p "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/ii/control-center.qml"
 
 Правила архитектуры и расширения описаны в
 [docs/ru/ARCHITECTURE.md](docs/ru/ARCHITECTURE.md).
+Локализация и правила перевода описаны в
+[docs/ru/LOCALIZATION.md](docs/ru/LOCALIZATION.md).
 
 ## Безопасность
 

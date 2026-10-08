@@ -18,9 +18,11 @@ import "controlcenter" as ControlCenter
 
 ApplicationWindow {
     id: root
+    readonly property bool smokeTest: Quickshell.env("MIKO_CONTROL_CENTER_SMOKE_TEST") === "1"
 
     ControlCenter.MikoStyle {
         id: ui
+        reducedMotion: controlState.reducedMotion
     }
     ControlCenter.Environment {
         id: environment
@@ -39,6 +41,11 @@ ApplicationWindow {
         id: controlState
         environment: environment
     }
+    Binding {
+        target: ControlCenter.I18n
+        property: "preference"
+        value: controlState.language
+    }
     ControlCenter.OperationCenter {
         id: operationCenter
         environment: environment
@@ -46,6 +53,9 @@ ApplicationWindow {
     ControlCenter.AppearanceController {
         id: appearanceController
         router: router
+        onThemeFailed: message => operationCenter.showMessage(
+            ControlCenter.I18n.tr("Оформление"), message, "error", "", null
+        )
     }
     ControlCenter.AudioController {
         id: audioController
@@ -77,8 +87,12 @@ ApplicationWindow {
     ControlCenter.SystemController {
         id: systemController
         environment: environment
-        updates: Updates
+        automaticUpdates: !root.smokeTest
         capabilities: capabilities
+    }
+    QtObject {
+        id: updateSummary
+        readonly property int count: systemController.availableUpdateCount
     }
     ControlCenter.SystemTelemetryController {
         id: telemetryController
@@ -108,18 +122,42 @@ ApplicationWindow {
     height: 760
     minimumWidth: 980
     minimumHeight: 660
-    visible: true
+    visible: !smokeTest
     title: "Miko Control Center"
     color: Appearance.m3colors.m3background
     onClosing: Qt.quit()
-    Component.onCompleted: MaterialThemeLoader.reapplyTheme()
+    Component.onCompleted: {
+        if (!smokeTest) MaterialThemeLoader.reapplyTheme();
+    }
+
+    Timer {
+        interval: 250
+        running: root.smokeTest && controlState.ready && capabilities.ready
+        repeat: true
+        property int step: 0
+        property var routes: ["overview", "network", "sound", "displays", "devices", "appearance", "system", "services", "applications"]
+        onTriggered: {
+            if (step < routes.length * 2) {
+                controlState.setLanguage(step < routes.length ? "ru_RU" : "en_US");
+                root.openPageId(routes[step % routes.length]);
+                if (pageLoader.status !== Loader.Ready) {
+                    console.error("[Miko smoke] Page did not load:", routes[step % routes.length]);
+                    Qt.exit(1);
+                }
+                ++step;
+            } else {
+                console.info("[Miko smoke] complete");
+                Qt.quit();
+            }
+        }
+    }
 
     readonly property string currentPageId: router.currentPageId
     readonly property int currentPage: router.currentPage
     readonly property var currentPageData:
         pageRegistry.pageById(currentPageId)
     readonly property string pageTitle:
-        currentPageData ? currentPageData.title : "Неизвестный раздел"
+        currentPageData ? currentPageData.title : ControlCenter.I18n.tr("Неизвестный раздел")
     readonly property string pageSubtitle:
         currentPageData ? currentPageData.subtitle : currentPageId
     property color ink: ui.ink
@@ -223,6 +261,42 @@ ApplicationWindow {
             root.requestActivate();
         }
 
+        function sound(tab: string): void {
+            root.openPageId("sound");
+            if (pageLoader.item && pageLoader.item.revealSection)
+                pageLoader.item.revealSection(tab);
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
+        function devices(tab: string): void {
+            root.openPageId("devices");
+            if (pageLoader.item && pageLoader.item.revealSection)
+                pageLoader.item.revealSection(tab);
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
+        function system(tab: string): void {
+            root.openPageId("system");
+            if (pageLoader.item && pageLoader.item.revealSection)
+                pageLoader.item.revealSection(tab);
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
+        function display(tab: string): void {
+            root.openPageId("displays");
+            if (pageLoader.item && pageLoader.item.revealSection)
+                pageLoader.item.revealSection(tab);
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
         function operations(): void {
             operationCenter.drawerOpen = true;
             root.show();
@@ -232,6 +306,14 @@ ApplicationWindow {
 
         function sidebar(): void {
             root.toggleSidebar();
+        }
+
+        function language(code: string): void {
+            const normalized = String(code || "").replace("-", "_");
+            controlState.setLanguage(
+                ["auto", "ru_RU", "en_US"].includes(normalized)
+                    ? normalized : "auto"
+            );
         }
     }
 
@@ -505,7 +587,7 @@ ApplicationWindow {
                         ToolTip.visible: brandMouse.containsMouse
                             && brandMouse.enabled
                         ToolTip.text: root.sidebarCompact
-                            ? "Развернуть меню" : "Свернуть меню"
+                            ? ControlCenter.I18n.tr("Развернуть меню") : ControlCenter.I18n.tr("Свернуть меню")
                     }
                     ColumnLayout {
                         visible: !root.sidebarCompact
@@ -521,7 +603,7 @@ ApplicationWindow {
                         }
                         MutedText {
                             Layout.fillWidth: true
-                            text: "Центр управления"
+                            text: ControlCenter.I18n.tr("Центр управления")
                             elide: Text.ElideRight
                         }
                     }
@@ -731,7 +813,7 @@ ApplicationWindow {
                                 leftMargin: 45
                                 rightMargin: 10
                             }
-                            placeholderText: "Что хочешь настроить?"
+                            placeholderText: ControlCenter.I18n.tr("Что хочешь настроить?")
                             color: root.ink
                             placeholderTextColor: root.mutedInk
                             font.family: Appearance.font.family.main
@@ -835,7 +917,7 @@ ApplicationWindow {
                             LabelText {
                                 anchors.centerIn: parent
                                 visible: root.filteredItems.length === 0
-                                text: "Пока ничего не найдено"
+                                text: ControlCenter.I18n.tr("Пока ничего не найдено")
                                 color: root.mutedInk
                             }
                         }
@@ -891,7 +973,7 @@ ApplicationWindow {
             network: Network
             networkState: networkController
             resourceUsage: ResourceUsage
-            updates: Updates
+            updates: updateSummary
             kdeConnect: KdeConnect
             audio: Audio
             bluetoothStatus: BluetoothStatus
@@ -906,7 +988,7 @@ ApplicationWindow {
             onToggleWifiRequested: {
                 Network.toggleWifi();
                 operationCenter.showMessage(
-                    "Wi-Fi", "Состояние переключено", "wifi", "", null
+                    "Wi-Fi", ControlCenter.I18n.tr("Состояние переключено"), "wifi", "", null
                 );
             }
             onToggleBluetoothRequested: {
@@ -914,7 +996,7 @@ ApplicationWindow {
                     Bluetooth.defaultAdapter.enabled =
                         !Bluetooth.defaultAdapter.enabled;
                 operationCenter.showMessage(
-                    "Bluetooth", "Состояние переключено",
+                    "Bluetooth", ControlCenter.I18n.tr("Состояние переключено"),
                     "bluetooth", "", null
                 );
             }
@@ -925,19 +1007,19 @@ ApplicationWindow {
                         ? "power-saver" : "balanced";
                 systemController.setPowerProfile(next);
                 operationCenter.showMessage(
-                    "Профиль питания", next, "speed", "", null
+                    ControlCenter.I18n.tr("Профиль питания"), next, "speed", "", null
                 );
             }
             onToggleNotificationsRequested: {
                 applicationsController.toggleNotifications();
                 operationCenter.showMessage(
-                    "Уведомления", "Режим изменён", "notifications", "", null
+                    ControlCenter.I18n.tr("Уведомления"), ControlCenter.I18n.tr("Режим изменён"), "notifications", "", null
                 );
             }
             onToggleNightLightRequested: {
                 Hyprsunset.toggleTemperature();
                 operationCenter.showMessage(
-                    "Ночной свет", "Состояние переключено", "bedtime", "", null
+                    ControlCenter.I18n.tr("Ночной свет"), ControlCenter.I18n.tr("Состояние переключено"), "bedtime", "", null
                 );
             }
             onNavigateRequested: pageId => root.openPageId(pageId)
@@ -966,6 +1048,7 @@ ApplicationWindow {
         id: appearancePage
         ControlCenter.AppearancePage {
             controller: appearanceController
+            preferences: controlState
             style: ui
         }
     }
@@ -1051,14 +1134,14 @@ ApplicationWindow {
                     }
                     LabelText {
                         Layout.fillWidth: true
-                        text: "Раздел недоступен"
+                        text: ControlCenter.I18n.tr("Раздел недоступен")
                         font.pixelSize: Appearance.font.pixelSize.larger
                         font.weight: Font.DemiBold
                     }
                     MutedText {
                         Layout.fillWidth: true
-                        text: "Для маршрута «" + root.currentPageId
-                            + "» не зарегистрирован компонент."
+                        text: ControlCenter.I18n.tr("Для маршрута «") + root.currentPageId
+                            + ControlCenter.I18n.tr("» не зарегистрирован компонент.")
                         wrapMode: Text.WordWrap
                     }
                 }

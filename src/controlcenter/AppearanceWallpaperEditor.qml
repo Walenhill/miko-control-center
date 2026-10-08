@@ -10,75 +10,71 @@ ColumnLayout {
     required property var style
 
     Layout.fillWidth: true
-    spacing: 12
+    spacing: 16
 
     readonly property var paletteModes: [
-        { title: "Авто", value: "auto" },
-        { title: "Контекст", value: "scheme-content" },
-        { title: "Выразительность", value: "scheme-expressive" },
-        { title: "Точность", value: "scheme-fidelity" },
-        { title: "Фруктовый салат", value: "scheme-fruit-salad" },
-        { title: "Монохром", value: "scheme-monochrome" },
-        { title: "Нейтральность", value: "scheme-neutral" },
-        { title: "Радуга", value: "scheme-rainbow" },
-        { title: "Тональное пятно", value: "scheme-tonal-spot" }
+        { title: I18n.tr("Авто"), value: "auto" },
+        { title: I18n.tr("Контекст"), value: "scheme-content" },
+        { title: I18n.tr("Выразительность"), value: "scheme-expressive" },
+        { title: I18n.tr("Точность"), value: "scheme-fidelity" },
+        { title: I18n.tr("Фруктовый салат"), value: "scheme-fruit-salad" },
+        { title: I18n.tr("Монохром"), value: "scheme-monochrome" },
+        { title: I18n.tr("Нейтральность"), value: "scheme-neutral" },
+        { title: I18n.tr("Радуга"), value: "scheme-rainbow" },
+        { title: I18n.tr("Тональное пятно"), value: "scheme-tonal-spot" }
     ]
 
-    StyledText {
-        text: "Характер цвета"
-        color: root.style.ink
-        font.pixelSize: Appearance.font.pixelSize.larger
-        font.weight: Font.DemiBold
-    }
-
-    Flow {
+    MikoSurface {
         Layout.fillWidth: true
-        spacing: 7
+        style: root.style
 
-        Repeater {
-            model: root.paletteModes
+        ColumnLayout {
+            anchors {
+                fill: parent
+                margins: 16
+            }
+            spacing: 14
 
-            delegate: Rectangle {
-                id: paletteChoice
+            MikoSectionHeader {
+                style: root.style
+                title: I18n.tr("Характер палитры (Material You)")
+                subtitle: I18n.tr("Алгоритм извлечения акцентных и гармонирующих цветов из текущих обоев")
+            }
 
-                required property var modelData
-                readonly property bool selected:
-                    root.controller.paletteSelection === modelData.value
+            Flow {
+                Layout.fillWidth: true
+                spacing: 8
 
-                width: paletteText.implicitWidth + 28
-                height: 42
-                radius: root.style.radiusControl
-                color: selected
-                    ? root.style.selectedSurface
-                    : (paletteMouse.containsMouse
-                        ? root.style.hoverSurface
-                        : root.style.sectionSurface)
-                antialiasing: true
+                Repeater {
+                    model: root.paletteModes
 
-                Behavior on color {
-                    ColorAnimation { duration: root.style.motionFast }
-                }
+                    delegate: MikoSurface {
+                        id: paletteChoice
+                        required property var modelData
+                        readonly property bool selected:
+                            root.controller.paletteSelection === modelData.value
 
-                StyledText {
-                    id: paletteText
-                    anchors.centerIn: parent
-                    text: paletteChoice.modelData.title
-                    color: paletteChoice.selected
-                        ? root.style.selectedInk
-                        : root.style.ink
-                    font.weight: paletteChoice.selected
-                        ? Font.DemiBold
-                        : Font.Normal
-                }
+                        width: paletteText.implicitWidth + 28
+                        height: 42
+                        style: root.style
+                        interactive: true
+                        softAccent: selected
 
-                MouseArea {
-                    id: paletteMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.controller.applyPalette(
-                        paletteChoice.modelData.value
-                    )
+                        StyledText {
+                            id: paletteText
+                            anchors.centerIn: parent
+                            text: paletteChoice.modelData.title
+                            color: root.style.ink
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                            font.weight: paletteChoice.selected
+                                ? Font.DemiBold
+                                : Font.Normal
+                        }
+
+                        onClicked: root.controller.applyPalette(
+                            paletteChoice.modelData.value
+                        )
+                    }
                 }
             }
         }

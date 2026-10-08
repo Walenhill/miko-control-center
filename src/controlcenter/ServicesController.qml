@@ -23,9 +23,9 @@ QtObject {
     property bool editingPins: false
     property bool showAllComponents: false
     property bool showCatalog: false
-    property string lastChecked: "ещё не проверено"
+    property string lastChecked: I18n.tr("ещё не проверено")
     property string diagnosticSummary:
-        "Глубокая проверка ещё не запускалась"
+        I18n.tr("Глубокая проверка ещё не запускалась")
     property string diagnosticDetails: ""
     property bool diagnosticHealthy: true
 
@@ -45,14 +45,14 @@ QtObject {
     function rejectAction(action, commands) {
         if (!capabilities.ready) {
             actionMessage =
-                "Определяем доступные системные инструменты…";
+                I18n.tr("Определяем доступные системные инструменты…");
             serviceMessageTimer.restart();
             return true;
         }
         const missing = missingCapabilities(commands);
         if (missing.length === 0)
             return false;
-        actionMessage = action + " недоступно: нет "
+        actionMessage = action + I18n.tr(" недоступно: нет ")
             + missing.join(", ");
         serviceMessageTimer.restart();
         return true;
@@ -64,13 +64,13 @@ QtObject {
             next[component.unit] = {
                 active: "unavailable",
                 enabled: "unavailable",
-                description: "systemctl недоступен",
+                description: I18n.tr("systemctl недоступен"),
                 unavailable: true
             };
         });
         serviceStates = next;
         discoveredServiceUnits = [];
-        lastChecked = "systemctl недоступен";
+        lastChecked = I18n.tr("systemctl недоступен");
     }
 
     function markIntegrationsUnavailable() {
@@ -89,9 +89,9 @@ QtObject {
         {
             id: "quickshell",
             unit: "miko-quickshell.service",
-            title: "Интерфейс системы",
+            title: I18n.tr("Интерфейс системы"),
             technicalName: "Quickshell",
-            subtitle: "Панель, виджеты и центр управления",
+            subtitle: I18n.tr("Панель, виджеты и центр управления"),
             icon: "deployed_code",
             kind: "core",
             pageId: "overview"
@@ -99,9 +99,9 @@ QtObject {
         {
             id: "pipewire",
             unit: "pipewire.service",
-            title: "Звук",
+            title: I18n.tr("Звук"),
             technicalName: "PipeWire",
-            subtitle: "Воспроизведение и мультимедийные потоки",
+            subtitle: I18n.tr("Воспроизведение и мультимедийные потоки"),
             icon: "audio_file",
             kind: "core",
             pageId: "sound"
@@ -109,9 +109,9 @@ QtObject {
         {
             id: "wireplumber",
             unit: "wireplumber.service",
-            title: "Аудиомаршрутизация",
+            title: I18n.tr("Аудиомаршрутизация"),
             technicalName: "WirePlumber",
-            subtitle: "Выбор и связь аудиоустройств",
+            subtitle: I18n.tr("Выбор и связь аудиоустройств"),
             icon: "account_tree",
             kind: "core",
             pageId: "sound"
@@ -119,9 +119,9 @@ QtObject {
         {
             id: "portal",
             unit: "xdg-desktop-portal.service",
-            title: "Доступ приложений",
+            title: I18n.tr("Доступ приложений"),
             technicalName: "Desktop Portal",
-            subtitle: "Экран, файлы и системные диалоги",
+            subtitle: I18n.tr("Экран, файлы и системные диалоги"),
             icon: "door_open",
             kind: "core",
             pageId: "services"
@@ -129,9 +129,9 @@ QtObject {
         {
             id: "hyprland-portal",
             unit: "xdg-desktop-portal-hyprland.service",
-            title: "Захват экрана",
+            title: I18n.tr("Захват экрана"),
             technicalName: "Hyprland Portal",
-            subtitle: "Демонстрация экрана в Wayland",
+            subtitle: I18n.tr("Демонстрация экрана в Wayland"),
             icon: "screenshot_monitor",
             kind: "system",
             pageId: "displays"
@@ -139,9 +139,9 @@ QtObject {
         {
             id: "clipboard-image",
             unit: "miko-clipboard-image.service",
-            title: "Изображения буфера",
+            title: I18n.tr("Изображения буфера"),
             technicalName: "miko-clipboard-image",
-            subtitle: "История и предпросмотр картинок",
+            subtitle: I18n.tr("История и предпросмотр картинок"),
             icon: "image",
             kind: "personal",
             pageId: "applications"
@@ -149,9 +149,9 @@ QtObject {
         {
             id: "clipboard-text",
             unit: "miko-clipboard-text.service",
-            title: "Текст буфера",
+            title: I18n.tr("Текст буфера"),
             technicalName: "miko-clipboard-text",
-            subtitle: "История скопированного текста",
+            subtitle: I18n.tr("История скопированного текста"),
             icon: "content_paste",
             kind: "personal",
             pageId: "applications"
@@ -159,9 +159,9 @@ QtObject {
         {
             id: "hypridle",
             unit: "miko-hypridle.service",
-            title: "Блокировка и сон",
+            title: I18n.tr("Блокировка и сон"),
             technicalName: "miko-hypridle",
-            subtitle: "Бездействие, блокировка и питание",
+            subtitle: I18n.tr("Бездействие, блокировка и питание"),
             icon: "bedtime",
             kind: "personal",
             pageId: "system"
@@ -173,7 +173,7 @@ QtObject {
             id: "throne",
             packageName: "throne",
             title: "Throne",
-            subtitle: "TUN, маршрутизация и защищённое соединение",
+            subtitle: I18n.tr("TUN, маршрутизация и защищённое соединение"),
             icon: "vpn_lock",
             pageId: "network",
             source: "AUR"
@@ -182,7 +182,7 @@ QtObject {
             id: "smartmontools",
             packageName: "smartmontools",
             title: "SMART",
-            subtitle: "Здоровье накопителей и ранние предупреждения",
+            subtitle: I18n.tr("Здоровье накопителей и ранние предупреждения"),
             icon: "hard_drive",
             pageId: "system",
             source: "pacman"
@@ -191,7 +191,7 @@ QtObject {
             id: "ddcutil",
             packageName: "ddcutil",
             title: "DDC/CI",
-            subtitle: "Аппаратная яркость внешних мониторов",
+            subtitle: I18n.tr("Аппаратная яркость внешних мониторов"),
             icon: "brightness_6",
             pageId: "displays",
             source: "pacman"
@@ -200,7 +200,7 @@ QtObject {
             id: "kdeconnect",
             packageName: "kdeconnect",
             title: "KDE Connect",
-            subtitle: "Телефон, файлы и общий буфер",
+            subtitle: I18n.tr("Телефон, файлы и общий буфер"),
             icon: "phonelink",
             pageId: "devices",
             source: "pacman"
@@ -209,7 +209,7 @@ QtObject {
             id: "easyeffects",
             packageName: "easyeffects",
             title: "EasyEffects",
-            subtitle: "Обработка и профили звука",
+            subtitle: I18n.tr("Обработка и профили звука"),
             icon: "graphic_eq",
             pageId: "sound",
             source: "pacman"
@@ -218,7 +218,7 @@ QtObject {
             id: "syncthing",
             packageName: "syncthing",
             title: "Syncthing",
-            subtitle: "Прямая синхронизация папок",
+            subtitle: I18n.tr("Прямая синхронизация папок"),
             icon: "sync",
             pageId: "",
             source: "pacman"
@@ -227,7 +227,7 @@ QtObject {
             id: "openrgb",
             packageName: "openrgb",
             title: "OpenRGB",
-            subtitle: "Подсветка подключённых устройств",
+            subtitle: I18n.tr("Подсветка подключённых устройств"),
             icon: "lightbulb",
             pageId: "",
             source: "pacman"
@@ -236,7 +236,7 @@ QtObject {
             id: "tailscale",
             packageName: "tailscale",
             title: "Tailscale",
-            subtitle: "Приватная сеть между устройствами",
+            subtitle: I18n.tr("Приватная сеть между устройствами"),
             icon: "vpn_lock",
             pageId: "network",
             source: "pacman"
@@ -261,7 +261,7 @@ QtObject {
 
     function refresh() {
         if (!capabilities.ready) {
-            lastChecked = "определяем возможности";
+            lastChecked = I18n.tr("определяем возможности");
             return;
         }
         if (capabilityAvailable("systemctl")) {
@@ -294,9 +294,9 @@ QtObject {
         if (serviceAction.running || !unit)
             return;
         if (rejectAction(
-                "Перезапуск службы", ["systemctl"]))
+                I18n.tr("Перезапуск службы"), ["systemctl"]))
             return;
-        actionMessage = "Перезапускаю " + unit + "…";
+        actionMessage = I18n.tr("Перезапускаю ") + unit + "…";
         serviceAction.exec(["systemctl", "--user", "restart", unit]);
     }
 
@@ -304,7 +304,7 @@ QtObject {
         if (!unit || !/^[A-Za-z0-9@_.:+-]+\.service$/.test(unit))
             return;
         if (rejectAction(
-                "Просмотр журнала", ["kitty", "journalctl"]))
+                I18n.tr("Просмотр журнала"), ["kitty", "journalctl"]))
             return;
         Quickshell.execDetached([
             "kitty", "-e", "journalctl", "--user", "-u", unit, "-f"
@@ -318,8 +318,8 @@ QtObject {
             return;
         if (!capabilities.archBased) {
             actionMessage =
-                "Установка интеграций через pacman недоступна "
-                + "в этой системе";
+                I18n.tr("Установка интеграций через pacman недоступна ")
+                + I18n.tr("в этой системе");
             serviceMessageTimer.restart();
             return;
         }
@@ -327,11 +327,11 @@ QtObject {
         const helper = capabilities.has("paru") ? "paru"
             : capabilities.has("yay") ? "yay" : "";
         if (aur && helper === "") {
-            actionMessage = "Для AUR-интеграции нужен paru или yay";
+            actionMessage = I18n.tr("Для AUR-интеграции нужен paru или yay");
             serviceMessageTimer.restart();
             return;
         }
-        if (rejectAction("Установка интеграции", aur
+        if (rejectAction(I18n.tr("Установка интеграции"), aur
                 ? ["kitty", helper] : ["kitty", "pacman", "pkexec"]))
             return;
         const installCommand = aur
@@ -339,7 +339,7 @@ QtObject {
             : "pkexec pacman -S --needed -- " + packageName;
         Quickshell.execDetached([
             "kitty", "-e", "bash", "-lc",
-            installCommand + "; echo; read -rp 'Enter для закрытия'"
+            installCommand + I18n.tr("; echo; read -rp 'Enter для закрытия'")
         ]);
     }
 
@@ -351,12 +351,12 @@ QtObject {
             diagnosticHealthy = false;
             diagnosticDetails = "";
             diagnosticSummary = capabilities.ready
-                ? "Проверка недоступна: miko-check не установлен"
-                : "Проверка недоступна: определяем возможности";
+                ? I18n.tr("Проверка недоступна: miko-check не установлен")
+                : I18n.tr("Проверка недоступна: определяем возможности");
             return;
         }
         diagnosticDetails = "";
-        diagnosticSummary = "Проверяю оболочку, службы и порталы…";
+        diagnosticSummary = I18n.tr("Проверяю оболочку, службы и порталы…");
         desktopDiagnostic.running = true;
     }
 
@@ -387,7 +387,7 @@ QtObject {
                     unit,
                     title: words.join(" "),
                     technicalName: unit,
-                    subtitle: "Автоматически найденный компонент Miko",
+                    subtitle: I18n.tr("Автоматически найденный компонент Miko"),
                     icon: "extension",
                     kind: "discovered",
                     pageId: ""
@@ -441,30 +441,30 @@ QtObject {
 
     function componentStateText(component) {
         if (!component)
-            return "Недоступно";
+            return I18n.tr("Недоступно");
         if (component.kind === "integration") {
             const integrationState = integrationStates[component.id];
             if (integrationState !== undefined
                     && integrationState.unavailable === true)
-                return "Каталог пакетов недоступен";
+                return I18n.tr("Каталог пакетов недоступен");
         } else {
             const serviceState = serviceStates[component.unit];
             if (serviceState !== undefined
                     && serviceState.unavailable === true)
-                return "systemctl недоступен";
+                return I18n.tr("systemctl недоступен");
         }
         if (!componentInstalled(component))
-            return "Не установлено";
+            return I18n.tr("Не установлено");
         if (component.kind === "integration") {
             if (component.id === "kdeconnect")
                 return kdeConnect.reachable
-                    ? "Телефон на связи" : "Установлено";
+                    ? I18n.tr("Телефон на связи") : I18n.tr("Установлено");
             if (component.id === "easyeffects")
                 return easyEffects.active
-                    ? "Обработка активна" : "Установлено";
-            return "Установлено";
+                    ? I18n.tr("Обработка активна") : I18n.tr("Установлено");
+            return I18n.tr("Установлено");
         }
-        return componentActive(component) ? "Работает" : "Остановлено";
+        return componentActive(component) ? I18n.tr("Работает") : I18n.tr("Остановлено");
     }
 
     function togglePin(id) {
@@ -622,8 +622,8 @@ QtObject {
         id: serviceAction
         onExited: (exitCode, exitStatus) => {
             root.actionMessage = exitCode === 0
-                ? "Служба успешно перезапущена"
-                : "Не удалось перезапустить службу";
+                ? I18n.tr("Служба успешно перезапущена")
+                : I18n.tr("Не удалось перезапустить службу");
             serviceMessageTimer.restart();
             root.refresh();
         }
@@ -644,8 +644,8 @@ QtObject {
         onExited: (exitCode, exitStatus) => {
             root.diagnosticHealthy = exitCode === 0;
             root.diagnosticSummary = exitCode === 0
-                ? "Проверка завершена — критичных проблем нет"
-                : "Проверка нашла компоненты, требующие внимания";
+                ? I18n.tr("Проверка завершена — критичных проблем нет")
+                : I18n.tr("Проверка нашла компоненты, требующие внимания");
         }
     }
 

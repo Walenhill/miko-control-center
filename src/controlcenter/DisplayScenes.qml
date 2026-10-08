@@ -6,112 +6,106 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
     required property var wakeAll
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: 12
 
-    RowLayout {
-        Layout.fillWidth: true
-        StyledText {
-            Layout.fillWidth: true
-            text: "Сцены экранов"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "Не записывают глобальный конфиг"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Быстрые сцены")
+        subtitle: I18n.tr("Временные профили отображения без изменения постоянного конфига")
     }
 
     GridLayout {
         Layout.fillWidth: true
         columns: width > 760 ? 3 : 1
-        columnSpacing: 10
-        rowSpacing: 10
+        columnSpacing: 12
+        rowSpacing: 12
 
         Repeater {
             model: [
                 {
-                    title: "Максимальная плавность",
-                    subtitle: "Лучшая доступная герцовка",
+                    title: I18n.tr("Макс. плавность"),
+                    subtitle: I18n.tr("Лучшая доступная герцовка"),
                     icon: "speed",
                     action: "performance"
                 },
                 {
-                    title: "Только текущий экран",
-                    subtitle: "Остальные временно отключатся",
+                    title: I18n.tr("Один экран"),
+                    subtitle: I18n.tr("Остальные отключатся"),
                     icon: "filter_1",
                     action: "single"
                 },
                 {
-                    title: "Разбудить все",
-                    subtitle: "Включить питание экранов",
+                    title: I18n.tr("Разбудить все"),
+                    subtitle: I18n.tr("Включить питание дисплеев"),
                     icon: "wb_sunny",
                     action: "wake"
                 }
             ]
-            delegate: Rectangle {
+            delegate: MikoSurface {
                 id: sceneCard
                 required property var modelData
                 Layout.fillWidth: true
-                implicitHeight: 82
-                radius: root.style.radiusSection
-                color: pointer.containsMouse
-                    ? root.style.hoverSurface
-                    : root.style.sectionSurface
-                border.width: 1
-                border.color: root.style.hairline
-                antialiasing: true
-                Behavior on color {
-                    ColorAnimation { duration: root.style.motionFast }
-                }
+                implicitHeight: 84
+                style: root.ui
+                interactive: true
+
                 RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 13
-                    spacing: 11
+                    anchors {
+                        fill: parent
+                        margins: 14
+                    }
+                    spacing: 12
+
                     MikoIconDisc {
-                        style: root.style
+                        style: root.ui
                         icon: sceneCard.modelData.icon
                     }
+
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
+                        spacing: 2
+
                         StyledText {
                             Layout.fillWidth: true
                             text: sceneCard.modelData.title
-                            color: root.style.ink
-                            font.weight: Font.Medium
+                            color: root.ui.ink
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
                             elide: Text.ElideRight
                         }
+
                         StyledText {
                             Layout.fillWidth: true
                             text: sceneCard.modelData.subtitle
-                            color: root.style.mutedInk
+                            color: root.ui.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                             elide: Text.ElideRight
                         }
                     }
-                }
-                MouseArea {
-                    id: pointer
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (sceneCard.modelData.action === "wake")
-                            root.wakeAll();
-                        else
-                            root.controller.runPreview([
-                                "scene",
-                                sceneCard.modelData.action
-                            ]);
+
+                    MaterialSymbol {
+                        text: "arrow_forward"
+                        iconSize: 18
+                        color: root.ui.mutedInk
+                        Layout.alignment: Qt.AlignVCenter
                     }
+                }
+
+                onClicked: {
+                    if (sceneCard.modelData.action === "wake")
+                        root.wakeAll();
+                    else
+                        root.controller.runPreview([
+                            "scene",
+                            sceneCard.modelData.action
+                        ]);
                 }
             }
         }

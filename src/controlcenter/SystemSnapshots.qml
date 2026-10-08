@@ -5,89 +5,101 @@ import qs.modules.common.widgets
 
 ColumnLayout {
     id: root
-    required property var controller
-    required property var style
-    spacing: 10
 
-    RowLayout {
-        Layout.fillWidth: true
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 1
-            StyledText {
-                text: "Снимки настроек"
-                color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.larger
-                font.weight: Font.DemiBold
-            }
-            StyledText {
-                text: "Только config.json оболочки и настройки центра"
-                color: root.style.mutedInk
-                font.pixelSize: Appearance.font.pixelSize.smaller
-            }
-        }
-        MikoButton {
-            style: root.style
-            icon: "add"
-            text: "Создать снимок"
-            enabled: !root.controller.busy
-            onClicked: root.controller.createSnapshot()
-        }
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
+    required property var controller
+    spacing: 12
+
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Снимки настроек системы")
+        subtitle: I18n.tr("Резервные копии конфигурации config.json и параметров интерфейса")
+        badgeText: (root.controller.snapshots && root.controller.snapshots.length > 0)
+            ? String(root.controller.snapshots.length) : "0"
+        actionText: I18n.tr("Создать снимок")
+        actionIcon: "add"
+        actionEnabled: !root.controller.busy
+        onActionClicked: root.controller.createSnapshot()
     }
 
     MikoListGroup {
-        style: root.style
+        style: root.ui
         Layout.fillWidth: true
+
         Repeater {
-            model: root.controller.snapshots
+            model: root.controller.snapshots || []
+
             delegate: MikoListRow {
                 required property var modelData
-                style: root.style
+                style: root.ui
                 icon: "restore"
                 title: modelData.title
-                subtitle: modelData.created + " · " + Math.max(1, Math.round(modelData.bytes / 1024)) + " КБ"
+                subtitle: modelData.created + " · " + Math.max(1, Math.round(modelData.bytes / 1024)) + I18n.tr(" КБ")
+
                 MikoButton {
-                    style: root.style
+                    style: root.ui
                     icon: "history"
-                    text: "Восстановить"
+                    text: I18n.tr("Восстановить")
                     onClicked: root.controller.requestRestore(modelData.path)
                 }
             }
         }
+
         StyledText {
-            visible: root.controller.snapshots.length === 0
-            text: "Снимков пока нет"
-            color: root.style.mutedInk
+            visible: !root.controller.snapshots || root.controller.snapshots.length === 0
+            text: I18n.tr("Снимков конфигурации пока нет")
+            color: root.ui.mutedInk
             padding: 18
         }
     }
 
+    // Pending restore confirmation banner
     MikoSurface {
-        visible: root.controller.pendingRestore !== ""
-        accented: true
-        style: root.style
+        visible: Boolean(root.controller.pendingRestore && root.controller.pendingRestore !== "")
+        style: root.ui
         Layout.fillWidth: true
-        implicitHeight: confirmRow.implicitHeight + 24
+
         RowLayout {
-            id: confirmRow
-            anchors { fill: parent; margins: 12 }
+            anchors.fill: parent
+            anchors.margins: 14
+            spacing: 12
+
+            MaterialSymbol {
+                text: "warning"
+                iconSize: 22
+                color: Appearance.colors.colPrimary
+            }
+
             StyledText {
                 Layout.fillWidth: true
-                text: "Заменить текущие настройки этим снимком?"
-                color: root.style.selectedInk
+                text: I18n.tr("Заменить текущую конфигурацию выбранным снимком?")
+                color: root.ui.ink
+                font.weight: Font.Medium
             }
-            MikoButton { style: root.style; text: "Отмена"; onClicked: root.controller.cancelRestore() }
-            MikoButton { style: root.style; text: "Восстановить"; selected: true; onClicked: root.controller.confirmRestore() }
+
+            MikoButton {
+                style: root.ui
+                text: I18n.tr("Отмена")
+                onClicked: root.controller.cancelRestore()
+            }
+
+            MikoButton {
+                style: root.ui
+                text: I18n.tr("Восстановить")
+                selected: true
+                onClicked: root.controller.confirmRestore()
+            }
         }
     }
 
     StyledText {
-        visible: root.controller.message !== ""
+        visible: Boolean(root.controller.message && root.controller.message !== "")
         Layout.fillWidth: true
-        text: root.controller.message
-        color: root.style.mutedInk
+        text: root.controller.message || ""
+        color: root.ui.mutedInk
         font.pixelSize: Appearance.font.pixelSize.smaller
     }
 
-    Component.onCompleted: root.controller.refresh()
 }

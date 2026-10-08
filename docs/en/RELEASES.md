@@ -6,6 +6,11 @@ without replacing the machine-readable version.
 
 ## Channels
 
+Current milestone: [Cadence · v1.0.0](../RELEASE-1.0.0.md).
+Release channels describe the maturity of a release within the supported
+system profile, not distribution-independent compatibility. The project itself
+remains experimental; see the README and limitations before installing.
+
 ### Lunar
 
 Experimental builds for new interaction models, architecture changes and ideas

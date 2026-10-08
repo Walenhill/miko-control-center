@@ -19,7 +19,7 @@ QtObject {
     function installEffects() {
         if (!effectsInstallAvailable) {
             actionMessage =
-                "Автоустановка доступна только при наличии pacman";
+                I18n.tr("Автоустановка доступна только при наличии pacman");
             return;
         }
         if (!easyEffectsInstall.running) {
@@ -77,7 +77,7 @@ QtObject {
     property Process balanceAction: Process {
         onExited: (exitCode) => {
             root.actionMessage = exitCode === 0
-                ? "" : "Не удалось изменить баланс";
+                ? "" : I18n.tr("Не удалось изменить баланс");
         }
     }
 
@@ -85,12 +85,12 @@ QtObject {
         id: easyEffectsInstall
         onRunningChanged: {
             if (running)
-                root.actionMessage = "Устанавливаем EasyEffects…";
+                root.actionMessage = I18n.tr("Устанавливаем EasyEffects…");
         }
         onExited: (exitCode, exitStatus) => {
             root.actionMessage = exitCode === 0
-                ? "EasyEffects установлен"
-                : "Установка отменена или завершилась с ошибкой";
+                ? I18n.tr("EasyEffects установлен")
+                : I18n.tr("Установка отменена или завершилась с ошибкой");
             root.effects.fetchAvailability();
             root.effects.fetchActiveState();
         }

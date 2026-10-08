@@ -16,7 +16,7 @@ QtObject {
     property string tunnelName: ""
     property bool wifiHardwareAvailable: false
     property var snapshot: ({})
-    property string lastChecked: "ещё не проверялось"
+    property string lastChecked: I18n.tr("ещё не проверялось")
     property var listeningPorts: []
     property var portInspection: ({})
     property string portQuery: ""
@@ -88,14 +88,14 @@ QtObject {
             return;
         const transport = protocol === "udp" ? "udp" : "tcp";
         const verb = allow ? "allow" : "deny";
-        const title = allow ? "Открыть порт" : "Закрыть порт";
+        const title = allow ? I18n.tr("Открыть порт") : I18n.tr("Закрыть порт");
         const subject = transport === "tcp"
             ? (allow
-                ? "Разрешить входящие TCP-подключения к порту $1 через UFW?"
-                : "Запретить входящие TCP-подключения к порту $1 через UFW? Приложение продолжит работать локально.")
+                ? I18n.tr("Разрешить входящие TCP-подключения к порту $1 через UFW?")
+                : I18n.tr("Запретить входящие TCP-подключения к порту $1 через UFW? Приложение продолжит работать локально."))
             : (allow
-                ? "Разрешить входящие UDP-пакеты на порт $1 через UFW?"
-                : "Запретить входящие UDP-пакеты на порт $1 через UFW? Приложение продолжит работать локально.");
+                ? I18n.tr("Разрешить входящие UDP-пакеты на порт $1 через UFW?")
+                : I18n.tr("Запретить входящие UDP-пакеты на порт $1 через UFW? Приложение продолжит работать локально."));
         firewallAction.exec([
             "bash", "-c",
             "kdialog --title '" + title + "' --yesno \"" + subject
@@ -108,7 +108,7 @@ QtObject {
         const bytes = Number(value);
         if (!isFinite(bytes) || bytes < 0)
             return "—";
-        const units = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+        const units = [I18n.tr("Б"), I18n.tr("КБ"), I18n.tr("МБ"), I18n.tr("ГБ"), I18n.tr("ТБ")];
         let amount = bytes;
         let unit = 0;
         while (amount >= 1024 && unit < units.length - 1) {
@@ -194,12 +194,12 @@ QtObject {
         id: firewallAction
         onRunningChanged: {
             if (running)
-                root.portActionMessage = "Применяем правило UFW…";
+                root.portActionMessage = I18n.tr("Применяем правило UFW…");
         }
         onExited: (exitCode, exitStatus) => {
             root.portActionMessage = exitCode === 0
-                ? "Правило UFW применено"
-                : "Действие отменено или завершилось с ошибкой";
+                ? I18n.tr("Правило UFW применено")
+                : I18n.tr("Действие отменено или завершилось с ошибкой");
             root.refreshPorts();
             if (root.portQuery !== "")
                 root.inspectPort(root.portQuery);

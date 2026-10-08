@@ -10,8 +10,8 @@ Rectangle {
     property string icon: "warning"
     property string title: ""
     property string description: ""
-    property string cancelText: "Отмена"
-    property string confirmText: "Продолжить"
+    property string cancelText: I18n.tr("Отмена")
+    property string confirmText: I18n.tr("Продолжить")
     property string confirmIcon: "check"
 
     signal cancelled()

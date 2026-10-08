@@ -6,136 +6,228 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var brightnessMonitor
     required property var hyprsunset
     required property var night
-    required property var style
 
     Layout.fillWidth: true
-    spacing: 12
+    spacing: 16
+
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Яркость и цветовая температура")
+        subtitle: I18n.tr("Настройка комфортного уровня свечения и ночного фильтра")
+    }
 
     GridLayout {
         Layout.fillWidth: true
         columns: width > 820 ? 2 : 1
-        columnSpacing: 12
-        rowSpacing: 12
+        columnSpacing: 14
+        rowSpacing: 14
 
-        Rectangle {
+        // Brightness Card
+        MikoSurface {
             Layout.fillWidth: true
-            implicitHeight: 154
-            radius: root.style.radiusSection
-            color: root.style.sectionSurface
-            border.width: 1
-            border.color: root.style.hairline
-            antialiasing: true
+            style: root.ui
+
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 17
-                spacing: 9
+                anchors.margins: 18
+                spacing: 14
+
                 RowLayout {
                     Layout.fillWidth: true
-                    MikoIconDisc { style: root.style; icon: "brightness_6" }
+                    spacing: 12
+
+                    MikoIconDisc {
+                        style: root.ui
+                        icon: "brightness_6"
+                        accented: true
+                    }
+
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
-                        StyledText { text: "Яркость"; color: root.style.ink; font.weight: Font.DemiBold }
+                        spacing: 2
+
                         StyledText {
-                            text: root.brightnessMonitor?.ready
-                                ? (root.brightnessMonitor.isDdc ? "Управление через DDC" : "Системная подсветка")
-                                : "Определение возможностей…"
-                            color: root.style.mutedInk
+                            text: I18n.tr("Яркость подсветки")
+                            color: root.ui.ink
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                        }
+
+                        StyledText {
+                            text: (root.brightnessMonitor && root.brightnessMonitor.ready)
+                                ? (root.brightnessMonitor.isDdc ? I18n.tr("Управление через DDC/CI") : I18n.tr("Аппаратная подсветка"))
+                                : I18n.tr("Определение монитора…")
+                            color: root.ui.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
-                    StyledText {
-                        text: Math.round((root.brightnessMonitor?.brightness ?? 0) * 100) + "%"
-                        color: root.style.ink
-                        font.pixelSize: Appearance.font.pixelSize.larger
-                        font.weight: Font.DemiBold
+
+                    MikoBadge {
+                        style: root.ui
+                        text: Math.round(((root.brightnessMonitor && root.brightnessMonitor.brightness !== undefined)
+                            ? root.brightnessMonitor.brightness : 0) * 100) + "%"
+                        tone: "accent"
                     }
                 }
+
                 StyledSlider {
                     Layout.fillWidth: true
-                    enabled: root.brightnessMonitor?.ready ?? false
-                    value: root.brightnessMonitor?.brightness ?? 0
+                    enabled: Boolean(root.brightnessMonitor && root.brightnessMonitor.ready)
+                    value: (root.brightnessMonitor && root.brightnessMonitor.brightness !== undefined)
+                        ? root.brightnessMonitor.brightness : 0
                     configuration: StyledSlider.Configuration.S
                     onMoved: if (root.brightnessMonitor) root.brightnessMonitor.setBrightness(value)
                 }
             }
         }
 
-        Rectangle {
+        // Night Light Card
+        MikoSurface {
             Layout.fillWidth: true
-            implicitHeight: 154
-            radius: root.style.radiusSection
-            color: Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g,
-                           Appearance.colors.colPrimary.b,
-                           root.hyprsunset.temperatureActive ? 0.16 : 0.07)
-            border.width: 1
-            border.color: root.style.hairline
-            antialiasing: true
+            style: root.ui
+
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 17
-                spacing: 9
+                anchors.margins: 18
+                spacing: 14
+
                 RowLayout {
                     Layout.fillWidth: true
-                    MikoIconDisc { style: root.style; icon: "bedtime"; accented: root.hyprsunset.temperatureActive }
+                    spacing: 12
+
+                    MikoIconDisc {
+                        style: root.ui
+                        icon: "bedtime"
+                        accented: Boolean(root.hyprsunset && root.hyprsunset.temperatureActive)
+                    }
+
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
-                        StyledText { text: "Ночной свет"; color: root.style.ink; font.weight: Font.DemiBold }
+                        spacing: 2
+
                         StyledText {
-                            text: root.night.automatic
-                                ? "Автоматически " + root.night.from + "–" + root.night.to
-                                : "Ручное управление"
-                            color: root.style.mutedInk
+                            text: I18n.tr("Ночной свет")
+                            color: root.ui.ink
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                        }
+
+                        StyledText {
+                            text: (root.night && root.night.automatic)
+                                ? (I18n.tr("По расписанию ") + root.night.from + "–" + root.night.to)
+                                : I18n.tr("Ручное переключение")
+                            color: root.ui.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
+
+                    MikoBadge {
+                        style: root.ui
+                        text: Math.round(root.night ? root.night.colorTemperature : 6500) + "K"
+                        tone: (root.hyprsunset && root.hyprsunset.temperatureActive) ? "accent" : "neutral"
+                    }
+
                     MikoButton {
-                        style: root.style
-                        icon: root.hyprsunset.temperatureActive ? "toggle_on" : "toggle_off"
-                        text: root.hyprsunset.temperatureActive ? "Включён" : "Выключен"
-                        onClicked: root.hyprsunset.toggleTemperature()
+                        style: root.ui
+                        icon: (root.hyprsunset && root.hyprsunset.temperatureActive) ? "toggle_on" : "toggle_off"
+                        text: (root.hyprsunset && root.hyprsunset.temperatureActive) ? I18n.tr("Вкл") : I18n.tr("Выкл")
+                        selected: Boolean(root.hyprsunset && root.hyprsunset.temperatureActive)
+                        onClicked: if (root.hyprsunset) root.hyprsunset.toggleTemperature()
                     }
                 }
+
                 StyledSlider {
                     Layout.fillWidth: true
                     from: 6500
                     to: 1200
-                    value: root.night.colorTemperature
+                    value: root.night ? root.night.colorTemperature : 6500
                     tooltipContent: Math.round(value) + "K"
                     usePercentTooltip: false
                     configuration: StyledSlider.Configuration.S
-                    onMoved: root.night.colorTemperature = value
+                    onMoved: if (root.night) root.night.colorTemperature = value
                 }
             }
         }
     }
 
-    Rectangle {
+    // Eye Comfort & Presets
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Комфорт для зрения")
+        subtitle: I18n.tr("Быстрые предустановки цветовой температуры")
+    }
+
+    MikoSurface {
         Layout.fillWidth: true
-        implicitHeight: 74
-        radius: root.style.radiusSection
-        color: "transparent"
-        border.width: 1
-        border.color: root.style.hairline
-        antialiasing: true
+        style: root.ui
+
         RowLayout {
-            anchors { fill: parent; leftMargin: 16; rightMargin: 16 }
-            MikoIconDisc { style: root.style; icon: "shield_with_heart" }
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 14
+
+            MikoIconDisc {
+                style: root.ui
+                icon: "shield_with_heart"
+            }
+
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 0
-                StyledText { text: "Комфорт для глаз"; color: root.style.ink; font.weight: Font.Medium }
+                spacing: 2
+
                 StyledText {
-                    text: "Гамма, анти-вспышка и автоматическая яркость"
-                    color: root.style.mutedInk
+                    text: I18n.tr("Быстрые режимы температуры")
+                    color: root.ui.ink
+                    font.weight: Font.DemiBold
+                    font.pixelSize: Appearance.font.pixelSize.normal
+                }
+
+                StyledText {
+                    text: I18n.tr("Выбери желаемый оттенок экрана в один клик")
+                    color: root.ui.mutedInk
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
-            MikoButton { style: root.style; icon: "tune"; text: "Дополнительно" }
+
+            RowLayout {
+                spacing: 8
+
+                MikoButton {
+                    style: root.ui
+                    icon: "wb_sunny"
+                    text: "6500K"
+                    selected: root.night && Math.abs(root.night.colorTemperature - 6500) < 50
+                    onClicked: {
+                        if (root.night) root.night.colorTemperature = 6500;
+                    }
+                }
+
+                MikoButton {
+                    style: root.ui
+                    icon: "filter_drama"
+                    text: "4500K"
+                    selected: root.night && Math.abs(root.night.colorTemperature - 4500) < 50
+                    onClicked: {
+                        if (root.night) root.night.colorTemperature = 4500;
+                    }
+                }
+
+                MikoButton {
+                    style: root.ui
+                    icon: "nightlight_round"
+                    text: "3200K"
+                    selected: root.night && Math.abs(root.night.colorTemperature - 3200) < 50
+                    onClicked: {
+                        if (root.night) root.night.colorTemperature = 3200;
+                    }
+                }
+            }
         }
     }
 }

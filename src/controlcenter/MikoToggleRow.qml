@@ -6,7 +6,9 @@ import qs.modules.common.widgets
 Item {
     id: root
 
-    required property var style
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property string title
     property string subtitle: ""
     property string icon: "tune"
@@ -24,7 +26,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: root.style.motionFast
+            duration: root.ui.motionFast
             easing.type: Easing.OutCubic
         }
     }
@@ -41,7 +43,7 @@ Item {
                 anchors.centerIn: parent
                 text: root.icon
                 iconSize: 20
-                color: root.style.mutedInk
+                color: root.ui.mutedInk
             }
         }
 
@@ -53,7 +55,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 text: root.title
-                color: root.style.ink
+                color: root.ui.ink
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
                 elide: Text.ElideRight
@@ -62,7 +64,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.subtitle !== ""
                 text: root.subtitle
-                color: root.style.mutedInk
+                color: root.ui.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 elide: Text.ElideRight
             }

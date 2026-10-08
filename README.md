@@ -2,6 +2,8 @@
 
 [Русская версия](README.ru.md) · **English**
 
+Current release: **Cadence · v1.0.0** — [release notes / upgrade guide](docs/RELEASE-1.0.0.md).
+
 A desktop-first control center for a customized Linux system built with
 [Quickshell](https://quickshell.org/), Qt Quick and the
 `illogical-impulse` (`ii`) shell runtime.
@@ -60,6 +62,7 @@ shipping one fixed accent color.
 - Process, autostart, notification and privacy activity views.
 - Keyboard navigation, accelerated scrolling and restrained desktop motion.
 - Customizable overview, deep search, operation center and settings snapshots.
+- Russian and English interface with live language switching.
 
 The complete capability matrix is in
 [docs/en/FEATURES.md](docs/en/FEATURES.md).
@@ -75,6 +78,7 @@ The current supported profile is:
 - Quickshell with the `illogical-impulse` runtime;
 - PipeWire/WirePlumber;
 - systemd user services.
+- Python 3 for validated settings snapshots and `jq` for package query results.
 
 The interface probes optional commands and degrades some integrations to
 disabled states. It is **not a standalone QML package**: it imports models,
@@ -167,6 +171,8 @@ Do not restart the primary shell just to validate this application.
 
 Architecture and extension rules are documented in
 [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md).
+Localization and translation rules are documented in
+[docs/en/LOCALIZATION.md](docs/en/LOCALIZATION.md).
 
 ## Safety
 

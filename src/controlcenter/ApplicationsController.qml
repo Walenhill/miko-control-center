@@ -12,6 +12,7 @@ QtObject {
     property string actionMessage: ""
     property bool notificationsSilent: false
     property bool active: false
+    property bool processesVisible: false
     property bool initialized: false
     property bool notificationInitialized: false
 
@@ -30,7 +31,8 @@ QtObject {
             refreshAutostart();
         }
         ensureNotificationLoaded();
-        refreshProcesses();
+        if (processesVisible)
+            refreshProcesses();
     }
 
     function ensureNotificationLoaded() {
@@ -40,16 +42,21 @@ QtObject {
         refreshNotificationState();
     }
 
+    onProcessesVisibleChanged: {
+        if (processesVisible && active)
+            refreshProcesses();
+    }
+
     function stop(pid) {
         if (processAction.running || pid < 1)
             return;
-        actionMessage = "Завершаю процесс " + pid + "…";
+        actionMessage = I18n.tr("Завершаю процесс ") + pid + "…";
         processAction.exec(["kill", "-TERM", String(pid)]);
     }
 
     function refreshProcesses() {
         if (root.capabilities.ready && !root.capabilities.has("ps")) {
-            root.actionMessage = "Команда ps не установлена";
+            root.actionMessage = I18n.tr("Команда ps не установлена");
             return;
         }
         if (!runningAppsRead.running)
@@ -106,7 +113,7 @@ QtObject {
 
     property Timer processRefreshTimer: Timer {
         interval: 3000
-        running: root.active
+        running: root.active && root.processesVisible
         repeat: true
         onTriggered: root.refreshProcesses()
     }
@@ -142,8 +149,8 @@ QtObject {
         id: processAction
         onExited: (exitCode, exitStatus) => {
             root.actionMessage = exitCode === 0
-                ? "Приложению отправлен запрос на завершение"
-                : "Не удалось завершить процесс";
+                ? I18n.tr("Приложению отправлен запрос на завершение")
+                : I18n.tr("Не удалось завершить процесс");
             root.selectedPid = -1;
             processMessageTimer.restart();
             root.refreshProcesses();

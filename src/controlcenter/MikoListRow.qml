@@ -6,7 +6,9 @@ import qs.modules.common.widgets
 Item {
     id: root
 
-    required property var style
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property string title
     property string subtitle: ""
     property string icon: "tune"
@@ -26,17 +28,17 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: root.style.radiusControl
+        radius: root.ui.radiusControl
         color: pointer.pressed
-            ? root.style.activeSurface
+            ? root.ui.activeSurface
             : pointer.containsMouse && root.interactive
-                ? root.style.hoverSurface : "transparent"
+                ? root.ui.hoverSurface : "transparent"
         border.width: root.activeFocus ? 2 : 0
-        border.color: root.style.focusRing
+        border.color: root.ui.focusRing
 
         Behavior on color {
             ColorAnimation {
-                duration: root.style.motionFast
+                duration: root.ui.motionFast
                 easing.type: Easing.OutCubic
             }
         }
@@ -57,7 +59,7 @@ Item {
                 anchors.centerIn: parent
                 text: root.icon
                 iconSize: 21
-                color: root.style.mutedInk
+                color: root.ui.mutedInk
             }
         }
 
@@ -68,7 +70,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 text: root.title
-                color: root.style.ink
+                color: root.ui.ink
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
                 elide: Text.ElideRight
@@ -77,7 +79,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.subtitle !== ""
                 text: root.subtitle
-                color: root.style.mutedInk
+                color: root.ui.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 elide: Text.ElideRight
             }
@@ -86,7 +88,7 @@ Item {
         StyledText {
             visible: root.value !== ""
             text: root.value
-            color: root.style.ink
+            color: root.ui.ink
             font.pixelSize: Appearance.font.pixelSize.small
             font.weight: Font.DemiBold
         }
@@ -100,7 +102,7 @@ Item {
             visible: root.showChevron
             text: "arrow_forward"
             iconSize: 19
-            color: root.style.mutedInk
+            color: root.ui.mutedInk
         }
     }
 
@@ -114,7 +116,7 @@ Item {
             rightMargin: 4
         }
         height: 1
-        color: root.style.hairline
+        color: root.ui.hairline
     }
 
     MouseArea {

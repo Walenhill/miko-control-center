@@ -53,6 +53,12 @@ if command -v desktop-file-validate >/dev/null 2>&1; then
     fi
 fi
 
+if "${REPO_ROOT}/scripts/check-i18n.sh"; then
+    pass "translation catalogs"
+else
+    fail "translation catalogs"
+fi
+
 if grep -RInE \
     --exclude='check.sh' \
     --exclude-dir='.git' \
@@ -77,25 +83,16 @@ else
     fail "QML inventory is unexpectedly small (${qml_count} files)"
 fi
 
-if command -v qmllint >/dev/null 2>&1; then
-    qml_diagnostics="$(mktemp)"
-    qml_status=0
-    while IFS= read -r -d '' qml_file; do
-        output="$(qmllint -I "${QML_ROOT}" "${qml_file}" 2>&1)" || qml_status=$?
-        if [[ -n "${output}" ]]; then
-            printf '%s\n%s\n' "${qml_file}" "${output}" >>"${qml_diagnostics}"
-        fi
-    done < <(find "${QML_ROOT}" -type f -name '*.qml' -print0)
-    if [[ -s "${qml_diagnostics}" ]]; then
-        cat "${qml_diagnostics}" >&2
-        fail "qmllint diagnostics"
-    elif ((qml_status != 0)); then
-        printf '[warn] qmllint returned %d without diagnostics; runtime imports may be unavailable\n' \
-            "${qml_status}"
-    else
-        pass "qmllint"
-    fi
-    rm -f -- "${qml_diagnostics}"
+if python3 "${REPO_ROOT}/scripts/check-qml.py"; then
+    pass "QML syntax"
+else
+    fail "QML syntax"
+fi
+
+if PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "${REPO_ROOT}/tests"; then
+    pass "backend failure and recovery tests"
+else
+    fail "backend tests"
 fi
 
 if ((failures > 0)); then
@@ -103,4 +100,4 @@ if ((failures > 0)); then
     exit 1
 fi
 
-printf '\nAll repository checks passed.\n'
+printf '\nAll static and backend checks passed. Run scripts/smoke.sh in a Wayland session for runtime validation.\n'

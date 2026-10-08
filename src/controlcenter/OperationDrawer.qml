@@ -81,14 +81,14 @@ Item {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    text: "Операции"
+                    text: I18n.tr("Операции")
                     color: root.style.ink
                     font.pixelSize: Appearance.font.pixelSize.large
                     font.weight: Font.DemiBold
                 }
                 StyledText {
                     visible: root.operations.activeCount > 0
-                    text: root.operations.activeCount + " выполняется"
+                    text: root.operations.activeCount + I18n.tr(" выполняется")
                     color: root.style.mutedInk
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
@@ -105,7 +105,7 @@ Item {
                 Layout.fillHeight: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: "Активных и недавних операций нет"
+                text: I18n.tr("Активных и недавних операций нет")
                 color: root.style.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.small
             }
@@ -164,7 +164,7 @@ Item {
                                         }
                                         StyledText {
                                             Layout.fillWidth: true
-                                            text: modelData.subtitle || "Выполняется…"
+                                            text: modelData.subtitle || I18n.tr("Выполняется…")
                                             color: root.style.mutedInk
                                             font.pixelSize: Appearance.font.pixelSize.smaller
                                             wrapMode: Text.WordWrap
@@ -194,7 +194,8 @@ Item {
                                         radius: parent.radius
                                         color: Appearance.colors.colPrimary
                                         SequentialAnimation on x {
-                                            running: modelData.progress < 0
+                                            running: root.visible && modelData.state === "running"
+                                                && modelData.progress < 0 && !root.style.reducedMotion
                                             loops: Animation.Infinite
                                             NumberAnimation { from: 0; to: Math.max(0, progressTrack.width - progressFill.width); duration: 900 }
                                             NumberAnimation { from: Math.max(0, progressTrack.width - progressFill.width); to: 0; duration: 900 }
@@ -226,7 +227,7 @@ Item {
                 MikoButton {
                     style: root.style
                     icon: "delete_sweep"
-                    text: "Очистить завершённые"
+                    text: I18n.tr("Очистить завершённые")
                     onClicked: root.operations.clearFinished()
                 }
             }

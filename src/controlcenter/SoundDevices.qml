@@ -1,7 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import qs.modules.common
-import qs.modules.common.widgets
 
 ColumnLayout {
     id: root
@@ -10,23 +8,12 @@ ColumnLayout {
     required property var style
 
     Layout.fillWidth: true
-    spacing: 12
+    spacing: root.style.gapControl
 
-    RowLayout {
-        Layout.fillWidth: true
-        Layout.topMargin: 4
-        StyledText {
-            Layout.fillWidth: true
-            text: "Устройства"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "Системные вход и выход"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Устройства")
+        subtitle: I18n.tr("Системные вход и выход")
     }
 
     GridLayout {

@@ -1,5 +1,21 @@
 # Changelog
 
+## Cadence · 1.0.0 - 2026-10-08
+
+Release notes: [English / Русский](docs/RELEASE-1.0.0.md).
+
+- Reconciled the installed tabbed interface with the distributable source.
+- Fixed overview imports, inherited click handlers and hidden progress animations.
+- Added source runtime smoke checks for all nine pages in RU and EN, Qt 6 syntax checks and backend failure tests.
+- Distinguish failed, cached and successful update sources; support both paru and yay queries.
+- Commit operation messages with their final status and serialize light/dark and palette generation.
+- Validate snapshot contents before restore, create a pre-restore backup and roll back failed writes.
+- Share fallback styling, suspend hidden microphone/process polling and load system diagnostics on demand.
+- Completed translations for the tabbed interface and added keyboard navigation to tabs.
+- Added an application-owned localization layer with live language switching.
+- Added automatic locale detection, a persistent language override and safe Russian fallback.
+- Added English interface coverage and repository checks for missing or unwrapped translations.
+
 ## Silverstar · 0.2.2 - 2026-08-09
 
 - Rebuilt the sidebar brand control so compact mode no longer crowds the title.

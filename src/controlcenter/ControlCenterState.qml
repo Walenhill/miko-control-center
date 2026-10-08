@@ -7,6 +7,7 @@ QtObject {
     required property var environment
 
     property bool ready: false
+    property string language: "auto"
     property bool overviewEditing: false
     property bool reducedMotion: false
     property bool sidebarCompact: false
@@ -28,7 +29,8 @@ QtObject {
 
     function snapshot() {
         return {
-            version: 2,
+            version: 3,
+            language,
             reducedMotion,
             sidebarCompact,
             overview: {
@@ -51,8 +53,10 @@ QtObject {
 
     function applySaved(saved) {
         const overview = saved && saved.overview ? saved.overview : {};
-        reducedMotion = saved?.reducedMotion === true;
-        sidebarCompact = saved?.sidebarCompact === true;
+        language = (saved && ["auto", "ru_RU", "en_US"].includes(saved.language))
+            ? saved.language : "auto";
+        reducedMotion = Boolean(saved && saved.reducedMotion === true);
+        sidebarCompact = Boolean(saved && saved.sidebarCompact === true);
         showOverviewHero = overview.showHero !== false;
         showOverviewMetrics = overview.showMetrics !== false;
         showOverviewQuickActions = overview.showQuickActions !== false;
@@ -68,7 +72,7 @@ QtObject {
         hiddenQuickActions = Array.isArray(overview.hiddenQuickActions)
             ? overview.hiddenQuickActions.filter(id => defaultQuickActionOrder.includes(id))
             : [];
-        recentSearches = Array.isArray(saved?.recentSearches)
+        recentSearches = (saved && Array.isArray(saved.recentSearches))
             ? saved.recentSearches.slice(0, 6) : [];
     }
 
@@ -85,6 +89,15 @@ QtObject {
 
     function setSidebarCompact(value) {
         sidebarCompact = value === true;
+        save();
+    }
+
+    function setLanguage(value) {
+        const next = ["auto", "ru_RU", "en_US"].includes(value)
+            ? value : "auto";
+        if (language === next)
+            return;
+        language = next;
         save();
     }
 

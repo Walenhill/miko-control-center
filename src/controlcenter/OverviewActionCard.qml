@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 
-Rectangle {
+MikoSurface {
     id: root
 
     required property var style
@@ -12,66 +12,41 @@ Rectangle {
     property string icon: "tune"
     property bool active: false
     property bool available: true
-    signal clicked()
 
     Layout.fillWidth: true
-    implicitHeight: 68
-    radius: style.radiusControl
-    opacity: available ? 1 : 0.42
-    activeFocusOnTab: available
-    color: active
-        ? style.accentContainer
-        : pointer.pressed
-            ? style.activeSurface
-            : pointer.containsMouse ? style.hoverSurface : style.sectionSurface
-    border.width: activeFocus ? 2 : 1
-    border.color: activeFocus
-        ? style.focusRing
-        : active
-        ? Qt.rgba(style.selectedSurface.r, style.selectedSurface.g,
-            style.selectedSurface.b, 0.32)
-        : style.hairline
-    antialiasing: true
-
-    Behavior on color {
-        ColorAnimation {
-            duration: root.style.motionFast
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.style.motionCurve
-        }
-    }
-    Behavior on border.color {
-        ColorAnimation {
-            duration: root.style.motionFast
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.style.motionCurve
-        }
-    }
+    implicitHeight: 72
+    interactive: root.available
+    softAccent: root.active
+    opacity: available ? 1 : 0.44
 
     RowLayout {
-        anchors.fill: parent
-        anchors.leftMargin: 13
-        anchors.rightMargin: 13
-        spacing: 10
+        anchors {
+            fill: parent
+            leftMargin: 14
+            rightMargin: 14
+        }
+        spacing: 12
 
         MikoIconDisc {
             style: root.style
             icon: root.icon
             accented: root.active
         }
+
         ColumnLayout {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            spacing: 0
+            spacing: 2
 
             StyledText {
                 Layout.fillWidth: true
                 text: root.title
                 color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.small
-                font.weight: Font.Medium
+                font.pixelSize: Appearance.font.pixelSize.normal
+                font.weight: root.active ? Font.DemiBold : Font.Medium
                 elide: Text.ElideRight
             }
+
             StyledText {
                 visible: root.subtitle !== ""
                 Layout.fillWidth: true
@@ -81,15 +56,6 @@ Rectangle {
                 elide: Text.ElideRight
             }
         }
-    }
-
-    MouseArea {
-        id: pointer
-        anchors.fill: parent
-        enabled: root.available
-        hoverEnabled: true
-        cursorShape: root.available ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: root.clicked()
     }
 
     Keys.onPressed: event => {

@@ -19,6 +19,10 @@ Reusable components are prefixed with `Miko`:
 A page should extend an existing primitive before inventing a visually
 incompatible copy.
 
+Pass the window's `MikoStyle` into components. Optional styles use the shared
+`DefaultStyle` singleton, not a new fallback instance per card. Endless
+animations must require visibility, a running operation and enabled motion.
+
 ## Controllers
 
 Every major domain has a controller:
@@ -46,6 +50,24 @@ reported with signals such as `navigateRequested`.
 
 No page should reach into the application window through implicit QML scope.
 
+Subtab visibility must gate probes as well as presentation: `visible: false`
+does not stop timers or destroy child objects. Process polling and microphone
+metering are enabled only in their visible sections. System scans are lazy.
+
+## Validation and backend helpers
+
+Run `scripts/check.sh` for Qt 6 syntax, translation placeholders and backend
+tests. Run `scripts/smoke.sh` in a Wayland session to load every source page in
+RU and EN against the installed ii imports. It uses temporary control-center
+state and does not restart the main shell. Syntax-only lint is not a runtime pass.
+
+`tools/check-updates.sh` returns separate JSON statuses for repository and AUR
+queries. A failed source must never be reported as an up-to-date system.
+`tools/snapshots.py` validates JSON without extracting archive paths, saves a
+pre-restore snapshot and rolls back completed writes if a later write fails.
+The two files cannot be replaced atomically as a pair across a power failure;
+the pre-restore snapshot is retained for recovery. Requires Python 3 and jq.
+
 ## Registry and routing
 
 `PageRegistry.qml` owns top-level page metadata and search entries.
@@ -66,6 +88,8 @@ not produce a button that fails after being clicked.
 ## Cross-cutting UI services
 
 - `ControlCenterState` persists UI preferences only;
+- `I18n` resolves the active locale and exposes reactive source-based
+  translations;
 - `OperationCenter` owns the shared task and feedback model;
 - `OperationBridge` maps domain-controller state into operations;
 - `SystemTelemetryController` and `SystemSnapshotsController` stay separate
@@ -83,6 +107,7 @@ hard-code scroll coordinates in the composition root.
 3. Put persistence, command execution and error parsing in the controller.
 4. Gate optional operations with a capability.
 5. Add confirmation and rollback for risky changes.
+6. Wrap user-visible text with `I18n.tr` and update language catalogs.
 
 ## Adding a section
 

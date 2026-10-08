@@ -12,30 +12,20 @@ ColumnLayout {
     required property var style
 
     Layout.fillWidth: true
-    spacing: 12
+    spacing: root.style.gapControl
 
-    RowLayout {
-        Layout.fillWidth: true
-        Layout.topMargin: 6
-        StyledText {
-            Layout.fillWidth: true
-            text: "Приложения"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: root.audio.outputAppNodes.length > 0
-                ? root.audio.outputAppNodes.length + " активно" : "Нет активного звука"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Приложения")
+        subtitle: root.audio.outputAppNodes.length > 0
+            ? root.audio.outputAppNodes.length + I18n.tr(" активно")
+            : I18n.tr("Нет активного звука")
     }
 
     Repeater {
         model: root.controller.groupedApps()
 
-        delegate: Rectangle {
+        delegate: MikoSurface {
             id: mixerRow
             required property var modelData
             readonly property var nodes: modelData.nodes
@@ -45,28 +35,29 @@ ColumnLayout {
             readonly property bool groupMuted: nodes.length > 0
                 && nodes.every(node => node.audio.muted)
 
+            style: root.style
             Layout.fillWidth: true
             implicitHeight: 86
-            radius: root.style.radiusSection
-            color: root.style.sectionSurface
-            border.width: 1
-            border.color: root.style.hairline
-            antialiasing: true
 
             PwObjectTracker { objects: mixerRow.nodes }
 
             RowLayout {
                 anchors { fill: parent; leftMargin: 14; rightMargin: 16 }
                 spacing: 12
+
                 MikoIconDisc {
                     style: root.style
                     icon: mixerRow.groupMuted ? "volume_off" : "graphic_eq"
+                    accented: !mixerRow.groupMuted && mixerRow.groupVolume > 0
                 }
+
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
+
                     RowLayout {
                         Layout.fillWidth: true
+
                         StyledText {
                             Layout.fillWidth: true
                             text: mixerRow.modelData.name
@@ -75,13 +66,15 @@ ColumnLayout {
                             font.weight: Font.Medium
                             elide: Text.ElideRight
                         }
+
                         StyledText {
                             visible: mixerRow.nodes.length > 1
-                            text: mixerRow.nodes.length + " потока"
+                            text: mixerRow.nodes.length + I18n.tr(" потока")
                             color: root.style.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
+
                     StyledSlider {
                         Layout.fillWidth: true
                         value: mixerRow.groupVolume
@@ -89,12 +82,14 @@ ColumnLayout {
                         onMoved: mixerRow.nodes.forEach(node => node.audio.volume = value)
                     }
                 }
+
                 StyledText {
                     text: Math.round(mixerRow.groupVolume * 100) + "%"
                     color: root.style.ink
                     font.pixelSize: Appearance.font.pixelSize.small
                     font.weight: Font.DemiBold
                 }
+
                 MikoButton {
                     style: root.style
                     icon: mixerRow.groupMuted ? "volume_up" : "volume_off"
@@ -109,17 +104,17 @@ ColumnLayout {
         }
     }
 
-    Rectangle {
+    MikoSurface {
         visible: root.audio.outputAppNodes.length === 0
+        style: root.style
         Layout.fillWidth: true
         implicitHeight: 82
-        radius: root.style.radiusSection
-        color: root.style.sectionSurface
-        antialiasing: true
+
         RowLayout {
             anchors.centerIn: parent
+            spacing: 8
             MaterialSymbol { text: "music_off"; iconSize: 21; color: root.style.mutedInk }
-            StyledText { text: "Запусти музыку — приложение появится здесь"; color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
+            StyledText { text: I18n.tr("Запусти музыку — приложение появится здесь"); color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
         }
     }
 }

@@ -18,7 +18,7 @@ QtObject {
             root.operations.finish(
                 key,
                 state === successState,
-                message || (state === successState ? "Готово" : "Операция завершилась с ошибкой"),
+                message || (state === successState ? I18n.tr("Готово") : I18n.tr("Операция завершилась с ошибкой")),
                 ""
             );
         }
@@ -27,44 +27,53 @@ QtObject {
     property Connections systemChanges: Connections {
         target: root.system
         function onUpdateDetailsStateChanged() {
+            Qt.callLater(root.syncUpdates);
+        }
+        function onStorageScanStateChanged() {
+            Qt.callLater(root.syncStorage);
+        }
+    }
+
+    function syncUpdates() {
             root.syncState(
-                "system-updates", "Обновления системы",
+                "system-updates", I18n.tr("Обновления системы"),
                 root.system.updateDetailsState,
                 ["checking", "installing"], "ready",
                 root.system.updateDetailsMessage
             );
-        }
-        function onStorageScanStateChanged() {
+    }
+    function syncStorage() {
             root.syncState(
-                "storage-scan", "Анализ хранилища",
+                "storage-scan", I18n.tr("Анализ хранилища"),
                 root.system.storageScanState,
                 ["checking", "cleaning"], "ready",
                 root.system.storageActionMessage
             );
-        }
     }
 
     property Connections serviceChanges: Connections {
         target: root.services
         function onDiagnosticSummaryChanged() {
-            if (root.services.diagnosticProcess.running)
-                root.operations.begin("desktop-diagnostic", "Диагностика системы", "Проверяем компоненты", false);
-            else if (root.operations.tasks.some(task => task.key === "desktop-diagnostic" && task.state === "running"))
-                root.operations.finish("desktop-diagnostic", root.services.diagnosticHealthy, root.services.diagnosticSummary, root.services.diagnosticDetails);
+            Qt.callLater(root.syncDiagnostics);
         }
         function onActionMessageChanged() {
             if (root.services.actionMessage !== "")
-                root.operations.showMessage("Службы", root.services.actionMessage, "settings_suggest", "", null);
+                root.operations.showMessage(I18n.tr("Службы"), root.services.actionMessage, "settings_suggest", "", null);
         }
     }
 
     property Connections diagnosticChanges: Connections {
         target: root.services.diagnosticProcess
         function onRunningChanged() {
+            Qt.callLater(root.syncDiagnostics);
+        }
+    }
+
+    function syncDiagnostics() {
             if (root.services.diagnosticProcess.running) {
                 root.operations.begin(
-                    "desktop-diagnostic", "Диагностика системы",
-                    "Проверяем компоненты", false
+                    "desktop-diagnostic", I18n.tr("Диагностика системы"),
+                    I18n.tr("Проверяем компоненты"), false
                 );
             } else if (root.operations.tasks.some(task =>
                     task.key === "desktop-diagnostic"
@@ -75,14 +84,13 @@ QtObject {
                     root.services.diagnosticDetails
                 );
             }
-        }
     }
 
     property Connections applicationChanges: Connections {
         target: root.applications
         function onActionMessageChanged() {
             if (root.applications.actionMessage !== "")
-                root.operations.showMessage("Приложения", root.applications.actionMessage, "apps", "", null);
+                root.operations.showMessage(I18n.tr("Приложения"), root.applications.actionMessage, "apps", "", null);
         }
     }
 
@@ -90,11 +98,11 @@ QtObject {
         target: root.kdeConnect
         function onTransferStateChanged() {
             if (root.kdeConnect.transferState === "sending")
-                root.operations.begin("phone-transfer", "Передача на телефон", "Отправляем по локальной сети", false);
+                root.operations.begin("phone-transfer", I18n.tr("Передача на телефон"), I18n.tr("Отправляем по локальной сети"), false);
             else if (root.kdeConnect.transferState === "success")
-                root.operations.finish("phone-transfer", true, "Файлы отправлены", "");
+                root.operations.finish("phone-transfer", true, I18n.tr("Файлы отправлены"), "");
             else if (root.kdeConnect.transferState === "error")
-                root.operations.finish("phone-transfer", false, "Не удалось передать файлы", "");
+                root.operations.finish("phone-transfer", false, I18n.tr("Не удалось передать файлы"), "");
         }
     }
 }

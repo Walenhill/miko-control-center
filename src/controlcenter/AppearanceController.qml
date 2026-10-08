@@ -11,7 +11,11 @@ QtObject {
     property string subsection: "form"
     readonly property string editor: router.appearanceEditor
     readonly property Process randomProcess: randomWallpaperProcess
-    readonly property bool busy: randomWallpaperProcess.running
+    readonly property bool busy: randomWallpaperProcess.running || wallpaperPicker.running || paletteBusy
+    property string queuedMode: ""
+    property string paletteMessage: ""
+    property bool generationFailed: false
+    signal themeFailed(string message)
     property string queuedPalette: ""
     property string runningPalette: ""
     readonly property string paletteSelection: queuedPalette !== ""
@@ -24,33 +28,33 @@ QtObject {
 
     readonly property var editors: ({
         wallpaper: {
-            title: "Обои и цвета",
-            subtitle: "Источники, палитра и Material You",
+            title: I18n.tr("Обои и цвета"),
+            subtitle: I18n.tr("Источники, палитра и Material You"),
             icon: "wallpaper"
         },
         bar: {
-            title: "Панель",
-            subtitle: "Положение, поведение и содержимое панели",
+            title: I18n.tr("Панель"),
+            subtitle: I18n.tr("Положение, поведение и содержимое панели"),
             icon: "dock_to_bottom"
         },
         interface: {
-            title: "Интерфейс",
-            subtitle: "Dock, overview, шрифты и экранные элементы",
+            title: I18n.tr("Интерфейс"),
+            subtitle: I18n.tr("Dock, overview, шрифты и экранные элементы"),
             icon: "widgets"
         },
         notifications: {
-            title: "Уведомления",
-            subtitle: "Время показа и расположение",
+            title: I18n.tr("Уведомления"),
+            subtitle: I18n.tr("Время показа и расположение"),
             icon: "notifications"
         },
         lock: {
-            title: "Экран блокировки",
-            subtitle: "Безопасность, фон и поведение",
+            title: I18n.tr("Экран блокировки"),
+            subtitle: I18n.tr("Безопасность, фон и поведение"),
             icon: "lock"
         },
         advanced: {
-            title: "Дополнительно",
-            subtitle: "Темизация приложений и эффекты рабочего стола",
+            title: I18n.tr("Дополнительно"),
+            subtitle: I18n.tr("Темизация приложений и эффекты рабочего стола"),
             icon: "tune"
         }
     })
@@ -67,16 +71,15 @@ QtObject {
 
     function editorMeta(name = editor) {
         return editors[name] ?? {
-            title: "Оформление",
-            subtitle: "Обои, панель и интерфейс",
+            title: I18n.tr("Оформление"),
+            subtitle: I18n.tr("Обои, панель и интерфейс"),
             icon: "palette"
         };
     }
 
     function chooseWallpaper() {
-        Quickshell.execDetached([
-            "bash", "-c", Directories.wallpaperSwitchScriptPath
-        ]);
+        if (!busy)
+            wallpaperPicker.exec([Directories.wallpaperSwitchScriptPath]);
     }
 
     function pickRandomWallpaper(source) {
@@ -84,17 +87,16 @@ QtObject {
             konachan: `${Directories.scriptPath}/colors/random/random_konachan_wall.sh`,
             osu: `${Directories.scriptPath}/colors/random/random_osu_wall.sh`
         };
-        if (scripts[source] === undefined || randomWallpaperProcess.running)
+        if (scripts[source] === undefined || busy)
             return;
         randomWallpaperProcess.scriptPath = scripts[source];
         randomWallpaperProcess.running = true;
     }
 
     function setDarkMode(dark) {
-        Quickshell.execDetached([
-            "bash", "-c",
-            `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`
-        ]);
+        queuedMode = dark ? "dark" : "light";
+        paletteMessage = "";
+        paletteDelay.restart();
     }
 
     function applyPalette(value) {
@@ -102,27 +104,49 @@ QtObject {
         // switchwall from reading the previous value, while the single worker
         // prevents older generators from finishing after a newer choice.
         queuedPalette = value;
+        paletteMessage = "";
         Config.options.appearance.palette.type = value;
         paletteDelay.restart();
     }
 
     function startPaletteJob() {
-        if (paletteProcess.running || queuedPalette === "")
+        if (paletteProcess.running || randomWallpaperProcess.running || wallpaperPicker.running
+                || (queuedPalette === "" && queuedMode === ""))
             return;
-        runningPalette = queuedPalette;
+        runningPalette = queuedPalette || Config.options.appearance.palette.type;
         queuedPalette = "";
-        paletteProcess.command = [
+        const command = [
             Directories.wallpaperSwitchScriptPath,
             "--noswitch",
             "--type",
             runningPalette
         ];
+        if (queuedMode !== "") command.push("--mode", queuedMode);
+        queuedMode = "";
+        paletteProcess.command = command;
         paletteProcess.running = true;
     }
 
     property Process randomWallpaperProcess: Process {
         property string scriptPath: ""
         command: ["bash", "-c", scriptPath]
+        onExited: (code, status) => root.generationFinished(code)
+    }
+
+    property Process wallpaperPicker: Process {
+        onExited: (code, status) => root.generationFinished(code)
+    }
+
+    function generationFinished(code) {
+        generationFailed = code !== 0;
+        if (generationFailed) {
+            paletteMessage = I18n.tr("Не удалось применить оформление. Повтори попытку.");
+            themeFailed(paletteMessage);
+        } else {
+            MaterialThemeLoader.reapplyTheme();
+        }
+        if (queuedPalette !== "" || queuedMode !== "")
+            Qt.callLater(root.startPaletteJob);
     }
 
     property Timer paletteDelay: Timer {
@@ -134,9 +158,7 @@ QtObject {
     property Process paletteProcess: Process {
         onExited: (exitCode, exitStatus) => {
             root.runningPalette = "";
-            MaterialThemeLoader.reapplyTheme();
-            if (root.queuedPalette !== "")
-                Qt.callLater(root.startPaletteJob);
+            root.generationFinished(exitCode);
         }
     }
 

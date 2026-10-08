@@ -15,54 +15,43 @@ ColumnLayout {
     required property real diskUsed
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: 12
 
-    RowLayout {
-        Layout.fillWidth: true
-
-        StyledText {
-            Layout.fillWidth: true
-            text: "Сейчас"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "Живое состояние без лишней диагностики"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Живые показатели")
+        subtitle: I18n.tr("Текущая нагрузка процессора, памяти, сети и накопителя")
     }
 
     GridLayout {
         Layout.fillWidth: true
         columns: width >= 820 ? 4 : 2
-        columnSpacing: 9
-        rowSpacing: 9
+        columnSpacing: 10
+        rowSpacing: 10
 
         OverviewMetricCard {
             style: root.style
-            title: "Процессор"
+            title: I18n.tr("Процессор")
             value: Math.round(root.cpuUsage * 100) + "%"
             icon: "memory"
             progress: root.cpuUsage
         }
         OverviewMetricCard {
             style: root.style
-            title: "Память"
+            title: I18n.tr("Память")
             value: Math.round(root.memoryUsage * 100) + "%"
             icon: "memory_alt"
             progress: root.memoryUsage
         }
         OverviewMetricCard {
             style: root.style
-            title: "Сеть"
+            title: I18n.tr("Сеть")
             value: root.networkValue
             icon: root.networkIcon
         }
         OverviewMetricCard {
             style: root.style
-            title: "Хранилище"
+            title: I18n.tr("Хранилище")
             value: root.diskFree
             icon: "hard_drive"
             progress: root.diskUsed

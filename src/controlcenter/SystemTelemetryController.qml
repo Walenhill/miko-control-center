@@ -6,7 +6,8 @@ QtObject {
 
     required property var environment
     property bool busy: false
-    property string lastChecked: "ещё не проверялось"
+    property bool initialized: false
+    property string lastChecked: I18n.tr("ещё не проверялось")
     property var temperatures: []
     property var failedUnits: []
     property bool rebootRecommended: false
@@ -46,6 +47,7 @@ QtObject {
         onRunningChanged: root.busy = running
         stdout: StdioCollector {
             onStreamFinished: {
+                root.initialized = true;
                 const temperatures = [];
                 const failed = [];
                 let reboot = false;
@@ -68,8 +70,8 @@ QtObject {
                 root.failedUnits = failed;
                 root.rebootRecommended = reboot;
                 root.message = failed.length === 0
-                    ? "Фоновые службы без ошибок"
-                    : "Найдено ошибок служб: " + failed.length;
+                    ? I18n.tr("Фоновые службы без ошибок")
+                    : I18n.tr("Найдено ошибок служб: ") + failed.length;
             }
         }
     }
@@ -102,8 +104,8 @@ QtObject {
             onStreamFinished: {
                 root.reportPath = text.trim();
                 root.message = root.reportPath === ""
-                    ? "Не удалось создать отчёт"
-                    : "Отчёт создан без IP, hostname и журналов";
+                    ? I18n.tr("Не удалось создать отчёт")
+                    : I18n.tr("Отчёт создан без IP, hostname и журналов");
             }
         }
     }

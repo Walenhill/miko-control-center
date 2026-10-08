@@ -34,14 +34,14 @@ QtObject {
     }
 
     function openTarget(target) {
-        const pageId = target?.pageId || registry.defaultPageId;
+        const pageId = (target && target.pageId) ? target.pageId : registry.defaultPageId;
         openId(pageId);
-        focusTarget = target?.target || target?.section || "";
-        if (pageId === "network" && target?.section)
+        focusTarget = (target && target.target) ? target.target : ((target && target.section) ? target.section : "");
+        if (pageId === "network" && target && target.section)
             networkSection = target.section;
-        if (pageId === "appearance" && target?.section)
+        if (pageId === "appearance" && target && target.section)
             appearanceEditor = target.section;
-        if (pageId === "services" && target?.componentId)
+        if (pageId === "services" && target && target.componentId)
             selectedComponentId = target.componentId;
         return pageId;
     }

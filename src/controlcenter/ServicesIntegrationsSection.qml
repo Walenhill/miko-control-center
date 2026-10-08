@@ -49,18 +49,18 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
             LabelText {
-                text: "Интеграции"
+                text: I18n.tr("Интеграции")
                 font.pixelSize: Appearance.font.pixelSize.larger
                 font.weight: Font.DemiBold
             }
             MutedText {
-                text: "Возможности, которые можно добавить к системе"
+                text: I18n.tr("Возможности, которые можно добавить к системе")
             }
         }
         SoftButton {
             icon: "add_circle"
             text: root.controller.showCatalog
-                ? "Закрыть каталог" : "Добавить интеграцию"
+                ? I18n.tr("Закрыть каталог") : I18n.tr("Добавить интеграцию")
             onClicked: root.controller.toggleCatalog()
         }
     }
@@ -128,11 +128,11 @@ ColumnLayout {
                         }
                         MutedText {
                             text: integrationCard.installed
-                                ? "Установлено · "
+                                ? I18n.tr("Установлено · ")
                                     + root.integrationVersion(
                                         integrationCard.modelData.id
                                     )
-                                : "Доступно из "
+                                : I18n.tr("Доступно из ")
                                     + integrationCard.modelData.source
                         }
                     }
@@ -140,7 +140,7 @@ ColumnLayout {
                         icon: integrationCard.installed
                             ? "arrow_forward" : "download"
                         text: integrationCard.installed
-                            ? "Открыть" : "Установить"
+                            ? I18n.tr("Открыть") : I18n.tr("Установить")
                         onClicked: {
                             if (integrationCard.installed) {
                                 if (integrationCard.modelData.pageId !== "") {

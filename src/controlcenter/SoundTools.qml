@@ -11,7 +11,13 @@ ColumnLayout {
     required property var style
 
     Layout.fillWidth: true
-    spacing: 12
+    spacing: root.style.gapSection
+
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Тонкая настройка")
+        subtitle: I18n.tr("Эффекты, баланс и защита")
+    }
 
     GridLayout {
         Layout.fillWidth: true
@@ -19,29 +25,27 @@ ColumnLayout {
         columnSpacing: 12
         rowSpacing: 12
 
-        Rectangle {
+        MikoSurface {
             Layout.fillWidth: true
             implicitHeight: effectsContent.implicitHeight + 30
-            radius: root.style.radiusSection
-            color: root.style.sectionSurface
-            border.width: 1
-            border.color: root.style.hairline
-            antialiasing: true
+            style: root.style
+
             ColumnLayout {
                 id: effectsContent
-                anchors { left: parent.left; right: parent.right; top: parent.top; margins: 15 }
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: root.style.cardPadding }
                 spacing: 8
+
                 RowLayout {
                     Layout.fillWidth: true
                     MikoIconDisc { style: root.style; icon: "equalizer"; accented: root.effects.active }
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 0
-                        StyledText { text: "Обработка звука"; color: root.style.ink; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold }
+                        StyledText { text: I18n.tr("Обработка звука"); color: root.style.ink; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold }
                         StyledText {
                             text: root.effects.available
-                                ? (root.effects.active ? "EasyEffects работает" : "EasyEffects выключен")
-                                : "EasyEffects не установлен"
+                                ? (root.effects.active ? I18n.tr("EasyEffects работает") : I18n.tr("EasyEffects выключен"))
+                                : I18n.tr("EasyEffects не установлен")
                             color: root.style.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
@@ -51,7 +55,7 @@ ColumnLayout {
                         visible: !root.effects.available
                         icon: "download"
                         text: root.controller.effectsInstallBusy
-                            ? "Установка…" : "Установить"
+                            ? I18n.tr("Установка…") : I18n.tr("Установить")
                         enabled: root.controller.effectsInstallAvailable
                             && !root.controller.effectsInstallBusy
                         onClicked: root.controller.installEffects()
@@ -73,57 +77,51 @@ ColumnLayout {
                     visible: root.effects.available
                     Layout.alignment: Qt.AlignRight
                     icon: "open_in_new"
-                    text: "Эквалайзер и эффекты"
+                    text: I18n.tr("Эквалайзер и эффекты")
                     onClicked: root.effects.openApp()
                 }
             }
         }
 
-        Rectangle {
+        MikoSurface {
             Layout.fillWidth: true
             implicitHeight: protectionContent.implicitHeight + 30
-            radius: root.style.radiusSection
-            color: root.style.sectionSurface
-            border.width: 1
-            border.color: root.style.hairline
-            antialiasing: true
+            style: root.style
+
             ColumnLayout {
                 id: protectionContent
-                anchors { left: parent.left; right: parent.right; top: parent.top; margins: 15 }
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: root.style.cardPadding }
                 spacing: 2
-                MikoToggleRow { style: root.style; title: "Защита слуха"; subtitle: "Останавливает резкий скачок громкости"; icon: "hearing"; checked: Config.options.audio.protection.enable; onToggled: checked => Config.options.audio.protection.enable = checked }
-                MikoStepperRow { style: root.style; title: "Максимальная громкость"; icon: "vertical_align_top"; value: Config.options.audio.protection.maxAllowed; minimum: 20; maximum: 120; step: 5; suffix: "%"; onChanged: value => Config.options.audio.protection.maxAllowed = value }
-                MikoStepperRow { style: root.style; title: "Допустимый скачок"; icon: "arrow_warm_up"; value: Config.options.audio.protection.maxAllowedIncrease; minimum: 2; maximum: 50; step: 2; suffix: "%"; onChanged: value => Config.options.audio.protection.maxAllowedIncrease = value }
+                MikoToggleRow { style: root.style; title: I18n.tr("Защита слуха"); subtitle: I18n.tr("Останавливает резкий скачок громкости"); icon: "hearing"; checked: Config.options.audio.protection.enable; onToggled: checked => Config.options.audio.protection.enable = checked }
+                MikoStepperRow { style: root.style; title: I18n.tr("Максимальная громкость"); icon: "vertical_align_top"; value: Config.options.audio.protection.maxAllowed; minimum: 20; maximum: 120; step: 5; suffix: "%"; onChanged: value => Config.options.audio.protection.maxAllowed = value }
+                MikoStepperRow { style: root.style; title: I18n.tr("Допустимый скачок"); icon: "arrow_warm_up"; value: Config.options.audio.protection.maxAllowedIncrease; minimum: 2; maximum: 50; step: 2; suffix: "%"; onChanged: value => Config.options.audio.protection.maxAllowedIncrease = value }
             }
         }
     }
 
-    Rectangle {
+    MikoSurface {
         Layout.fillWidth: true
         implicitHeight: 92
-        radius: root.style.radiusSection
-        color: root.style.sectionSurface
-        border.width: 1
-        border.color: root.style.hairline
-        antialiasing: true
+        style: root.style
+
         RowLayout {
-            anchors { fill: parent; margins: 15 }
+            anchors { fill: parent; margins: root.style.cardPadding }
             spacing: 12
             MikoIconDisc { style: root.style; icon: "spatial_audio" }
             ColumnLayout {
                 Layout.preferredWidth: 180
                 spacing: 0
-                StyledText { text: "Стереобаланс"; color: root.style.ink; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold }
+                StyledText { text: I18n.tr("Стереобаланс"); color: root.style.ink; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold }
                 StyledText {
-                    text: Math.abs(root.controller.balance) < 0.02 ? "По центру"
+                    text: Math.abs(root.controller.balance) < 0.02 ? I18n.tr("По центру")
                         : root.controller.balance < 0
-                            ? "Левее на " + Math.round(Math.abs(root.controller.balance) * 100) + "%"
-                            : "Правее на " + Math.round(root.controller.balance * 100) + "%"
+                            ? I18n.tr("Левее на ") + Math.round(Math.abs(root.controller.balance) * 100) + "%"
+                            : I18n.tr("Правее на ") + Math.round(root.controller.balance * 100) + "%"
                     color: root.style.mutedInk
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
-            StyledText { text: "Л"; color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
+            StyledText { text: I18n.tr("Л"); color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
             StyledSlider {
                 Layout.fillWidth: true
                 from: -1
@@ -132,11 +130,11 @@ ColumnLayout {
                 configuration: StyledSlider.Configuration.S
                 onMoved: root.controller.applyBalance(value)
             }
-            StyledText { text: "П"; color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
+            StyledText { text: I18n.tr("П"); color: root.style.mutedInk; font.pixelSize: Appearance.font.pixelSize.smaller }
             MikoButton {
                 style: root.style
                 icon: "center_focus_strong"
-                text: "Центр"
+                text: I18n.tr("Центр")
                 enabled: Math.abs(root.controller.balance) >= 0.02
                 onClicked: root.controller.applyBalance(0)
             }

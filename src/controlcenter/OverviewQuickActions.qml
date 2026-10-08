@@ -32,7 +32,7 @@ ColumnLayout {
         if (id === "wifi") return {
             title: "Wi-Fi",
             subtitle: root.wifiAvailable
-                ? (root.wifiName || "Не подключён") : "Нет адаптера",
+                ? (root.wifiName || I18n.tr("Не подключён")) : I18n.tr("Нет адаптера"),
             icon: root.wifiEnabled ? "wifi" : "wifi_off",
             active: root.wifiEnabled,
             available: root.wifiAvailable
@@ -40,41 +40,41 @@ ColumnLayout {
         if (id === "bluetooth") return {
             title: "Bluetooth",
             subtitle: root.bluetoothConnected
-                ? root.bluetoothDeviceCount + " подключено" : "Нет устройств",
+                ? root.bluetoothDeviceCount + I18n.tr(" подключено") : I18n.tr("Нет устройств"),
             icon: root.bluetoothEnabled ? "bluetooth" : "bluetooth_disabled",
             active: root.bluetoothEnabled,
             available: root.bluetoothAvailable
         };
         if (id === "power") return {
-            title: "Профиль питания",
+            title: I18n.tr("Профиль питания"),
             subtitle: root.powerProfile === "performance"
-                ? "Производительность"
-                : root.powerProfile === "power-saver" ? "Экономия" : "Баланс",
+                ? I18n.tr("Производительность")
+                : root.powerProfile === "power-saver" ? I18n.tr("Экономия") : I18n.tr("Баланс"),
             icon: root.powerProfile === "performance" ? "rocket_launch"
                 : root.powerProfile === "power-saver" ? "eco" : "speed",
             active: root.powerProfile === "performance",
             available: root.powerProfile !== "unavailable"
         };
         if (id === "notifications") return {
-            title: "Не беспокоить",
+            title: I18n.tr("Не беспокоить"),
             subtitle: root.notificationsSilent
-                ? "Уведомления приглушены" : "Уведомления активны",
+                ? I18n.tr("Уведомления приглушены") : I18n.tr("Уведомления активны"),
             icon: root.notificationsSilent
                 ? "notifications_paused" : "notifications",
             active: root.notificationsSilent,
             available: true
         };
         if (id === "night") return {
-            title: "Ночной свет",
+            title: I18n.tr("Ночной свет"),
             subtitle: root.nightLightActive
-                ? "Тёплые цвета включены" : "Обычная температура",
+                ? I18n.tr("Тёплые цвета включены") : I18n.tr("Обычная температура"),
             icon: root.nightLightActive ? "nightlight" : "light_mode",
             active: root.nightLightActive,
             available: true
         };
         return {
-            title: "Настройки экрана",
-            subtitle: root.screenCount + " подключено",
+            title: I18n.tr("Настройки экрана"),
+            subtitle: root.screenCount + I18n.tr(" подключено"),
             icon: "desktop_windows",
             active: false,
             available: true
@@ -95,23 +95,12 @@ ColumnLayout {
     )
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: 12
 
-    RowLayout {
-        Layout.fillWidth: true
-
-        StyledText {
-            Layout.fillWidth: true
-            text: "Быстрые действия"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "То, что обычно нужно прямо сейчас"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Быстрые действия")
+        subtitle: I18n.tr("Быстрое переключение беспроводных сетей, профилей и режимов экрана")
     }
 
     GridLayout {

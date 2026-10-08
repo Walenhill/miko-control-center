@@ -6,59 +6,17 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
 
     spacing: 12
 
-    component LabelText: StyledText {
-        color: root.style.ink
-        font.pixelSize: Appearance.font.pixelSize.small
-    }
-
-    component MutedText: StyledText {
-        color: root.style.mutedInk
-        font.pixelSize: Appearance.font.pixelSize.smaller
-    }
-
-    component IconDisc: MikoIconDisc {
-        style: root.style
-    }
-
-    component ProgressStrip: Rectangle {
-        id: progressStrip
-
-        property real value: 0
-        property color fillColor: Appearance.colors.colPrimary
-
-        implicitHeight: 7
-        radius: 4
-        color: root.style.controlSurface
-        antialiasing: true
-
-        Rectangle {
-            width: parent.width * Math.max(
-                0, Math.min(1, progressStrip.value)
-            )
-            height: parent.height
-            radius: parent.radius
-            color: progressStrip.fillColor
-            antialiasing: true
-
-            Behavior on width {
-                NumberAnimation {
-                    duration: root.style.motionNormal
-                    easing.type: Easing.OutCubic
-                }
-            }
-        }
-    }
-
-    LabelText {
-        text: "Производительность"
-        font.pixelSize: Appearance.font.pixelSize.larger
-        font.weight: Font.DemiBold
-        Layout.topMargin: 4
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Нагрузка оборудования")
+        subtitle: I18n.tr("Мониторинг вычислительных ресурсов процессора и оперативной памяти")
     }
 
     GridLayout {
@@ -67,131 +25,121 @@ ColumnLayout {
         columnSpacing: 12
         rowSpacing: 12
 
-        Rectangle {
+        // CPU Card
+        MikoSurface {
             Layout.fillWidth: true
-            implicitHeight: 164
-            radius: root.style.radiusSection
-            color: root.style.hoverSurface
-            border.width: 1
-            border.color: Qt.rgba(
-                root.style.ink.r,
-                root.style.ink.g,
-                root.style.ink.b,
-                0.055
-            )
-            antialiasing: true
+            style: root.ui
 
             ColumnLayout {
-                anchors {
-                    fill: parent
-                    margins: 17
-                }
-                spacing: 10
+                anchors.fill: parent
+                anchors.margins: 18
+                spacing: 12
 
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 12
 
-                    IconDisc {
+                    MikoIconDisc {
+                        style: root.ui
                         icon: "memory"
                         accented: true
                     }
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
+                        spacing: 2
 
-                        LabelText {
-                            text: "Процессор"
+                        StyledText {
+                            text: I18n.tr("Процессор (CPU)")
+                            color: root.ui.ink
                             font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
                         }
 
-                        MutedText {
-                            text: "Текущая общая загрузка"
+                        StyledText {
+                            text: I18n.tr("Общая загрузка ядер")
+                            color: root.ui.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
 
-                    LabelText {
-                        text: Math.round(
-                            root.controller.cpuUsage * 100
-                        ) + "%"
-                        font.pixelSize: Appearance.font.pixelSize.larger
-                        font.weight: Font.DemiBold
+                    MikoBadge {
+                        style: root.ui
+                        text: Math.round(root.controller.cpuUsage * 100) + "%"
+                        tone: root.controller.cpuUsage > 0.85 ? "warning" : "accent"
                     }
                 }
 
-                ProgressStrip {
+                MikoProgressBar {
                     Layout.fillWidth: true
-                    value: root.controller.cpuUsage
+                    style: root.ui
+                    value: Math.max(0, Math.min(1, root.controller.cpuUsage))
+                    tone: root.controller.cpuUsage > 0.85 ? "warning" : "accent"
                 }
 
-                MutedText {
-                    text: "Доступная частота до "
-                        + root.controller.maxAvailableCpuString
+                StyledText {
+                    text: I18n.tr("Максимальная частота: ") + root.controller.maxAvailableCpuString
+                    color: root.ui.mutedInk
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
         }
 
-        Rectangle {
+        // Memory Card
+        MikoSurface {
             Layout.fillWidth: true
-            implicitHeight: 164
-            radius: root.style.radiusSection
-            color: root.style.hoverSurface
-            border.width: 1
-            border.color: Qt.rgba(
-                root.style.ink.r,
-                root.style.ink.g,
-                root.style.ink.b,
-                0.055
-            )
-            antialiasing: true
+            style: root.ui
 
             ColumnLayout {
-                anchors {
-                    fill: parent
-                    margins: 17
-                }
-                spacing: 10
+                anchors.fill: parent
+                anchors.margins: 18
+                spacing: 12
 
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 12
 
-                    IconDisc {
+                    MikoIconDisc {
+                        style: root.ui
                         icon: "memory_alt"
                     }
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
+                        spacing: 2
 
-                        LabelText {
-                            text: "Память"
+                        StyledText {
+                            text: I18n.tr("Оперативная память (RAM)")
+                            color: root.ui.ink
                             font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
                         }
 
-                        MutedText {
-                            text: root.controller.maxAvailableMemoryString
-                                + " установлено"
+                        StyledText {
+                            text: root.controller.maxAvailableMemoryString + I18n.tr(" установлено")
+                            color: root.ui.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
 
-                    LabelText {
-                        text: Math.round(
-                            root.controller.memoryUsedPercentage * 100
-                        ) + "%"
-                        font.pixelSize: Appearance.font.pixelSize.larger
-                        font.weight: Font.DemiBold
+                    MikoBadge {
+                        style: root.ui
+                        text: Math.round(root.controller.memoryUsedPercentage * 100) + "%"
+                        tone: root.controller.memoryUsedPercentage > 0.90 ? "warning" : "accent"
                     }
                 }
 
-                ProgressStrip {
+                MikoProgressBar {
                     Layout.fillWidth: true
-                    value: root.controller.memoryUsedPercentage
+                    style: root.ui
+                    value: Math.max(0, Math.min(1, root.controller.memoryUsedPercentage))
+                    tone: root.controller.memoryUsedPercentage > 0.90 ? "warning" : "accent"
                 }
 
-                MutedText {
-                    text: "Swap: " + Math.round(
-                        root.controller.swapUsedPercentage * 100
-                    ) + "%"
+                StyledText {
+                    text: "Swap: " + Math.round(root.controller.swapUsedPercentage * 100) + "%"
+                    color: root.ui.mutedInk
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
         }

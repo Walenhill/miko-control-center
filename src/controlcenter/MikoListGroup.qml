@@ -4,16 +4,17 @@ import QtQuick.Layouts
 Rectangle {
     id: root
 
-    required property var style
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
     default property alias rows: content.data
     property int padding: 8
 
     Layout.fillWidth: true
     implicitHeight: content.implicitHeight + padding * 2
-    radius: style.radiusSection
-    color: style.sectionSurface
+    radius: root.ui.radiusSection
+    color: root.ui.sectionSurface
     border.width: 1
-    border.color: style.hairline
+    border.color: root.ui.hairline
     antialiasing: true
     clip: true
 

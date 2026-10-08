@@ -14,15 +14,15 @@ ColumnLayout {
     spacing: 22
 
     readonly property var paletteModes: [
-        { title: "Авто", value: "auto" },
-        { title: "В контексте", value: "scheme-content" },
-        { title: "Выразительность", value: "scheme-expressive" },
-        { title: "Точность", value: "scheme-fidelity" },
-        { title: "Фруктовый салат", value: "scheme-fruit-salad" },
-        { title: "Монохром", value: "scheme-monochrome" },
-        { title: "Нейтральность", value: "scheme-neutral" },
-        { title: "Радуга", value: "scheme-rainbow" },
-        { title: "Тональное пятно", value: "scheme-tonal-spot" }
+        { title: I18n.tr("Авто"), value: "auto" },
+        { title: I18n.tr("В контексте"), value: "scheme-content" },
+        { title: I18n.tr("Выразительность"), value: "scheme-expressive" },
+        { title: I18n.tr("Точность"), value: "scheme-fidelity" },
+        { title: I18n.tr("Фруктовый салат"), value: "scheme-fruit-salad" },
+        { title: I18n.tr("Монохром"), value: "scheme-monochrome" },
+        { title: I18n.tr("Нейтральность"), value: "scheme-neutral" },
+        { title: I18n.tr("Радуга"), value: "scheme-rainbow" },
+        { title: I18n.tr("Тональное пятно"), value: "scheme-tonal-spot" }
     ]
 
     GridLayout {
@@ -40,14 +40,14 @@ ColumnLayout {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    text: "Текущие обои"
+                    text: I18n.tr("Текущие обои")
                     color: root.style.ink
                     font.pixelSize: Appearance.font.pixelSize.larger
                     font.weight: Font.DemiBold
                 }
                 StyledText {
                     visible: sceneGrid.columns > 1
-                    text: "Показываются целиком"
+                    text: I18n.tr("Показываются целиком")
                     color: root.style.mutedInk
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
@@ -86,7 +86,7 @@ ColumnLayout {
                 MikoButton {
                     style: root.style
                     icon: "wallpaper"
-                    text: "Выбрать обои"
+                    text: I18n.tr("Выбрать обои")
                     onClicked: root.controller.chooseWallpaper()
                 }
                 MikoButton {
@@ -113,7 +113,7 @@ ColumnLayout {
             spacing: 13
 
             StyledText {
-                text: "Цвет и материал"
+                text: I18n.tr("Цвет и материал")
                 color: root.style.ink
                 font.pixelSize: Appearance.font.pixelSize.larger
                 font.weight: Font.DemiBold
@@ -124,8 +124,8 @@ ColumnLayout {
                 spacing: 8
                 Repeater {
                     model: [
-                        { title: "Светлая", icon: "light_mode", dark: false },
-                        { title: "Тёмная", icon: "dark_mode", dark: true }
+                        { title: I18n.tr("Светлая"), icon: "light_mode", dark: false },
+                        { title: I18n.tr("Тёмная"), icon: "dark_mode", dark: true }
                     ]
                     delegate: MikoButton {
                         required property var modelData
@@ -141,10 +141,10 @@ ColumnLayout {
 
             MikoToggleRow {
                 style: root.style
-                title: "Прозрачность"
+                title: I18n.tr("Прозрачность")
                 subtitle: Config.options.appearance.transparency.enable
-                    ? "Обои проходят через поверхности интерфейса"
-                    : "Интерфейс использует сплошные поверхности"
+                    ? I18n.tr("Обои проходят через поверхности интерфейса")
+                    : I18n.tr("Интерфейс использует сплошные поверхности")
                 icon: "ev_shadow"
                 checked: Config.options.appearance.transparency.enable
                 onToggled: checked =>
@@ -155,7 +155,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    text: "Характер палитры"
+                    text: I18n.tr("Характер палитры")
                     color: root.style.ink
                     font.pixelSize: Appearance.font.pixelSize.small
                     font.weight: Font.DemiBold
@@ -208,7 +208,7 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 10
         StyledText {
-            text: "Оболочка"
+            text: I18n.tr("Оболочка")
             color: root.style.ink
             font.pixelSize: Appearance.font.pixelSize.larger
             font.weight: Font.DemiBold
@@ -218,16 +218,16 @@ ColumnLayout {
             Repeater {
                 model: [
                     {
-                        title: "Панель и экран",
+                        title: I18n.tr("Панель и экран"),
                         subtitle: (Config.options.bar.vertical
-                            ? "Вертикальная" : "Горизонтальная")
-                            + " · положение, автоскрытие и элементы",
+                            ? I18n.tr("Вертикальная") : I18n.tr("Горизонтальная"))
+                            + I18n.tr(" · положение, автоскрытие и элементы"),
                         icon: "dock_to_bottom", editor: "bar"
                     },
                     {
-                        title: "Интерфейс и поведение",
+                        title: I18n.tr("Интерфейс и поведение"),
                         subtitle: Config.options.appearance.fonts.main
-                            + " · dock, overview и экранные элементы",
+                            + I18n.tr(" · dock, overview и экранные элементы"),
                         icon: "widgets", editor: "interface"
                     }
                 ]
@@ -251,7 +251,7 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 10
         StyledText {
-            text: "Отдельные части"
+            text: I18n.tr("Отдельные части")
             color: root.style.ink
             font.pixelSize: Appearance.font.pixelSize.larger
             font.weight: Font.DemiBold
@@ -261,21 +261,21 @@ ColumnLayout {
             Repeater {
                 model: [
                     {
-                        title: "Уведомления",
+                        title: I18n.tr("Уведомления"),
                         subtitle: Math.round(
                             Config.options.notifications.timeout / 1000
-                        ) + " сек. · монитор и история",
+                        ) + I18n.tr(" сек. · монитор и история"),
                         icon: "notifications", editor: "notifications"
                     },
                     {
-                        title: "Экран блокировки",
+                        title: I18n.tr("Экран блокировки"),
                         subtitle: Config.options.lock.useHyprlock
                             ? "Hyprlock" : "Quickshell",
                         icon: "lock", editor: "lock"
                     },
                     {
-                        title: "Дополнительно",
-                        subtitle: "Темизация приложений, parallax и терминал",
+                        title: I18n.tr("Дополнительно"),
+                        subtitle: I18n.tr("Темизация приложений, parallax и терминал"),
                         icon: "tune", editor: "advanced"
                     }
                 ]

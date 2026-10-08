@@ -2,14 +2,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.services
+import qs.modules.common
 
 QtObject {
     id: root
 
     required property var environment
-    required property var updates
+    property bool automaticUpdates: true
     required property var capabilities
     property bool active: false
+    property string activeSection: "performance"
     property bool initialized: false
     property bool capabilityOverviewInitialized: false
 
@@ -19,7 +21,7 @@ QtObject {
     property var recentPackageHistory: []
     property string updateDetailsState: "not-checked"
     property string updateDetailsMessage: ""
-    property string updateLastChecked: "ещё не проверялось"
+    property string updateLastChecked: I18n.tr("ещё не проверялось")
     property bool updateListExpanded: true
 
     property string storageScanState: "not-checked"
@@ -36,7 +38,7 @@ QtObject {
     property var cleanupConfirmRequirements: []
 
     property var watchEvents: []
-    property string watchLastScan: "ещё не запускался"
+    property string watchLastScan: I18n.tr("ещё не запускался")
     readonly property int watchUnreadCount: watchEvents.filter(
         event => !event.resolved && !event.ignored && !event.read
     ).length
@@ -67,7 +69,7 @@ QtObject {
         ResourceUsage.maxAvailableCpuString
     readonly property string maxAvailableMemoryString:
         ResourceUsage.maxAvailableMemoryString
-    readonly property int availableUpdateCount: updates.count
+    readonly property int availableUpdateCount: repositoryUpdates.length + aurUpdates.length
 
     readonly property var watchAction: mikoWatchAction
     readonly property var powerProfileAction: powerProfileSet
@@ -96,13 +98,13 @@ QtObject {
     function storageCapabilityFailure(action, commands) {
         if (!capabilities.ready) {
             storageActionMessage =
-                "Определяем доступные системные инструменты…";
+                I18n.tr("Определяем доступные системные инструменты…");
             return true;
         }
         const missing = missingCapabilities(commands);
         if (missing.length === 0)
             return false;
-        storageActionMessage = action + " недоступна: нет "
+        storageActionMessage = action + I18n.tr(" недоступна: нет ")
             + missing.join(", ");
         return true;
     }
@@ -111,14 +113,14 @@ QtObject {
         if (!capabilities.ready) {
             updateDetailsState = "checking";
             updateDetailsMessage =
-                "Определяем доступные менеджеры пакетов…";
+                I18n.tr("Определяем доступные менеджеры пакетов…");
             return true;
         }
         const missing = missingCapabilities(commands);
         if (missing.length === 0)
             return false;
         updateDetailsState = "unavailable";
-        updateDetailsMessage = action + " недоступно: нет "
+        updateDetailsMessage = action + I18n.tr(" недоступно: нет ")
             + missing.join(", ");
         return true;
     }
@@ -146,7 +148,7 @@ QtObject {
         const bytes = Number(value);
         if (!isFinite(bytes) || bytes < 0)
             return "—";
-        const units = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+        const units = [I18n.tr("Б"), I18n.tr("КБ"), I18n.tr("МБ"), I18n.tr("ГБ"), I18n.tr("ТБ")];
         let amount = bytes;
         let unit = 0;
         while (amount >= 1024 && unit < units.length - 1) {
@@ -180,15 +182,22 @@ QtObject {
                 mikoWatchRead.running = true;
         } else {
             watchEvents = [];
-            watchLastScan = "miko-watch недоступен";
+            watchLastScan = I18n.tr("miko-watch недоступен");
         }
     }
 
     function ensureLoaded() {
         ensureOverviewLoaded();
-        if (updateDetailsState === "not-checked")
+        ensureSectionLoaded(activeSection);
+    }
+
+    function ensureSectionLoaded(section) {
+        activeSection = section;
+        if (!active)
+            return;
+        if (section === "updates" && updateDetailsState === "not-checked")
             refreshUpdates();
-        if (storageScanState === "not-checked")
+        if (section === "storage" && storageScanState === "not-checked")
             refreshStorage();
     }
 
@@ -201,19 +210,19 @@ QtObject {
         if (!capabilities.ready) {
             updateDetailsState = "checking";
             updateDetailsMessage =
-                "Определяем доступные менеджеры пакетов…";
+                I18n.tr("Определяем доступные менеджеры пакетов…");
             return;
         }
         if (!capabilities.archBased
                 || updateCapabilityFailure(
-                    "Проверка обновлений", ["pacman"])) {
+                    I18n.tr("Проверка обновлений"), ["pacman"])) {
             repositoryUpdates = [];
             aurUpdates = [];
             recentPackageHistory = [];
             if (!capabilities.archBased) {
                 updateDetailsState = "unavailable";
                 updateDetailsMessage =
-                    "Обновления pacman недоступны в этой системе";
+                    I18n.tr("Обновления pacman недоступны в этой системе");
             }
             return;
         }
@@ -227,7 +236,7 @@ QtObject {
         if (!capabilities.ready) {
             storageScanState = "checking";
             storageActionMessage =
-                "Определяем доступные системные инструменты…";
+                I18n.tr("Определяем доступные системные инструменты…");
             return;
         }
         if (!storageScan.running) {
@@ -277,7 +286,7 @@ QtObject {
 
     function runWatch(arguments) {
         if (!capabilities.ready || !mikoWatchAvailable()) {
-            watchLastScan = "miko-watch недоступен";
+            watchLastScan = I18n.tr("miko-watch недоступен");
             return;
         }
         if (!mikoWatchAction.running) {
@@ -316,11 +325,11 @@ QtObject {
         if (!capabilities.archBased) {
             updateDetailsState = "unavailable";
             updateDetailsMessage =
-                "Обновление pacman недоступно в этой системе";
+                I18n.tr("Обновление pacman недоступно в этой системе");
             return;
         }
         if (updateCapabilityFailure(
-                "Обновление системы", ["pacman", "pkexec"]))
+                I18n.tr("Обновление системы"), ["pacman", "pkexec"]))
             return;
         if (!repositoryUpdateInstall.running)
             repositoryUpdateInstall.running = true;
@@ -330,14 +339,21 @@ QtObject {
         if (!capabilities.archBased) {
             updateDetailsState = "unavailable";
             updateDetailsMessage =
-                "Обновление AUR недоступно в этой системе";
+                I18n.tr("Обновление AUR недоступно в этой системе");
+            return;
+        }
+        const helper = capabilityAvailable("paru") ? "paru"
+            : capabilityAvailable("yay") ? "yay" : "";
+        if (helper === "") {
+            updateDetailsMessage = I18n.tr("Для AUR-интеграции нужен paru или yay");
+            updateDetailsState = "unavailable";
             return;
         }
         if (updateCapabilityFailure(
-                "Обновление AUR", ["paru", "kitty"]))
+                I18n.tr("Обновление AUR"), [helper, "kitty"]))
             return;
         Quickshell.execDetached([
-            "kitty", "--hold", "-e", "paru", "-Sua"
+            "kitty", "--hold", "-e", helper, "-Sua"
         ]);
     }
 
@@ -348,47 +364,47 @@ QtObject {
     function requestStorageCleanup(action) {
         if (action === "cache") {
             if (storageCapabilityFailure(
-                    "Очистка кэша", ["pkexec", "paccache"]))
+                    I18n.tr("Очистка кэша"), ["pkexec", "paccache"]))
                 return;
             requestCleanup(
-                "Очистить кэш пакетов?",
-                "paccache оставит две последние версии каждого пакета. "
-                    + "Это безопаснее полной очистки и сохраняет возможность "
-                    + "локального отката.",
+                I18n.tr("Очистить кэш пакетов?"),
+                I18n.tr("paccache оставит две последние версии каждого пакета. ")
+                    + I18n.tr("Это безопаснее полной очистки и сохраняет возможность ")
+                    + I18n.tr("локального отката."),
                 ["pkexec", "paccache", "-rk2"],
                 ["pkexec", "paccache"]
             );
         } else if (action === "trash") {
             if (storageCapabilityFailure(
-                    "Очистка корзины", ["gio"]))
+                    I18n.tr("Очистка корзины"), ["gio"]))
                 return;
             requestCleanup(
-                "Очистить корзину?",
-                "Файлы из корзины будут удалены окончательно. "
-                    + "Остальные каталоги Home не затрагиваются.",
+                I18n.tr("Очистить корзину?"),
+                I18n.tr("Файлы из корзины будут удалены окончательно. ")
+                    + I18n.tr("Остальные каталоги Home не затрагиваются."),
                 ["gio", "trash", "--empty"],
                 ["gio"]
             );
         } else if (action === "journal") {
             if (storageCapabilityFailure(
-                    "Очистка журнала", ["pkexec", "journalctl"]))
+                    I18n.tr("Очистка журнала"), ["pkexec", "journalctl"]))
                 return;
             requestCleanup(
-                "Сократить системный журнал?",
-                "Будут удалены записи старше 14 дней. "
-                    + "Свежие журналы для диагностики сохранятся.",
+                I18n.tr("Сократить системный журнал?"),
+                I18n.tr("Будут удалены записи старше 14 дней. ")
+                    + I18n.tr("Свежие журналы для диагностики сохранятся."),
                 ["pkexec", "journalctl", "--vacuum-time=14d"],
                 ["pkexec", "journalctl"]
             );
         } else if (action === "orphans" && orphanPackages.length > 0) {
             if (storageCapabilityFailure(
-                    "Удаление пакетов", ["pkexec", "pacman"]))
+                    I18n.tr("Удаление пакетов"), ["pkexec", "pacman"]))
                 return;
             requestCleanup(
-                "Удалить осиротевшие пакеты?",
+                I18n.tr("Удалить осиротевшие пакеты?"),
                 orphanPackages.join(", ")
-                    + "\n\nЭто зависимости, которые pacman больше не считает "
-                    + "нужными. Проверь список перед продолжением.",
+                    + "\n\n" + I18n.tr("Это зависимости, которые pacman больше не считает ")
+                    + I18n.tr("нужными. Проверь список перед продолжением."),
                 ["pkexec", "pacman", "-Rns", "--noconfirm"].concat(
                     orphanPackages
                 ),
@@ -415,7 +431,7 @@ QtObject {
         if (storageCleanup.running || cleanupConfirmCommand.length === 0)
             return;
         if (storageCapabilityFailure(
-                "Очистка", cleanupConfirmRequirements)) {
+                I18n.tr("Очистка"), cleanupConfirmRequirements)) {
             cleanupConfirmVisible = false;
             cleanupConfirmCommand = [];
             cleanupConfirmRequirements = [];
@@ -439,11 +455,11 @@ QtObject {
             if (!root.active)
                 return;
             root.ensureOverviewLoaded();
-            if (root.updateDetailsState === "checking"
-                    || root.updateDetailsState === "not-checked")
+            if (root.activeSection === "updates" && (root.updateDetailsState === "checking"
+                    || root.updateDetailsState === "not-checked"))
                 root.refreshUpdates();
-            if (root.storageScanState === "checking"
-                    || root.storageScanState === "not-checked")
+            if (root.activeSection === "storage" && (root.storageScanState === "checking"
+                    || root.storageScanState === "not-checked"))
                 root.refreshStorage();
         }
     }
@@ -469,65 +485,57 @@ QtObject {
         }
     }
 
+    property Timer updateRefreshTimer: Timer {
+        interval: Math.max(1, Config.options.updates.checkInterval) * 60000
+        running: root.automaticUpdates && root.capabilities.ready
+            && root.capabilities.archBased && Config.ready && Config.options.updates.enableCheck
+        triggeredOnStart: true
+        repeat: true
+        onTriggered: root.refreshUpdates()
+    }
+
     property Process updateReader: Process {
         id: updateDetailsRead
-        command: ["bash", "-c", `
-            printf '__REPOSITORY__\\n'
-            if command -v checkupdates >/dev/null 2>&1; then
-                checkupdates 2>/dev/null || test $? -eq 2
-            else
-                pacman -Qu 2>/dev/null || true
-            fi
-            printf '__AUR__\\n'
-            if command -v paru >/dev/null 2>&1; then
-                paru -Qua 2>/dev/null || true
-            fi
-        `]
+        environment: ({ CHECKUPDATES_DB: root.environment.controlCenterState + "/checkupdates-db" })
+        command: ["bash", decodeURIComponent(Qt.resolvedUrl("tools/check-updates.sh").toString().replace(/^file:\/\//, ""))]
         onRunningChanged: {
             if (running) {
+                root.updateDetailsMessage = I18n.tr("Проверяем репозитории и AUR…");
                 root.updateDetailsState = "checking";
-                root.updateDetailsMessage = "Проверяем репозитории и AUR…";
             }
         }
         stdout: StdioCollector {
             onStreamFinished: {
-                const repositoryMarker = text.indexOf("__REPOSITORY__");
-                const aurMarker = text.indexOf("__AUR__");
-                if (repositoryMarker < 0 || aurMarker < 0) {
+                try {
+                    const result = JSON.parse(text);
+                    const repoOk = ["ok", "cached"].includes(result.repositoryStatus);
+                    const aurOk = result.aurStatus === "ok";
+                    root.repositoryUpdates = repoOk ? root.parsePackageUpdates(result.repository, "repository") : [];
+                    root.aurUpdates = aurOk ? root.parsePackageUpdates(result.aur, "aur") : [];
+                    const errors = [];
+                    if (!repoOk) errors.push(I18n.tr("Репозитории: проверка не удалась"));
+                    if (result.aurStatus === "error") errors.push(I18n.tr("AUR: проверка не удалась"));
+                    const total = root.repositoryUpdates.length + root.aurUpdates.length;
+                    let message = errors.length ? errors.join(" · ")
+                        : (total > 0 ? I18n.tr("Найдено обновлений: {count}", { count: total })
+                            : I18n.tr("Обновлений в проверенных источниках нет"));
+                    if (result.repositoryStatus === "cached")
+                        message += " · " + I18n.tr("Локальная база; актуальность не проверена");
+                    if (result.aurStatus === "unavailable")
+                        message += " · " + I18n.tr("AUR не проверен: нужен paru или yay");
+                    root.updateDetailsMessage = message;
+                    root.updateLastChecked = Qt.formatDateTime(new Date(), "dd.MM · HH:mm");
+                    root.updateDetailsState = errors.length ? "error" : "ready";
+                } catch (error) {
+                    root.updateDetailsMessage = I18n.tr("Не удалось разобрать ответ менеджера пакетов");
                     root.updateDetailsState = "error";
-                    root.updateDetailsMessage =
-                        "Не удалось разобрать ответ менеджера пакетов";
-                    return;
                 }
-                const repositoryText = text.slice(
-                    repositoryMarker + "__REPOSITORY__".length,
-                    aurMarker
-                );
-                const aurText = text.slice(aurMarker + "__AUR__".length);
-                root.repositoryUpdates = root.parsePackageUpdates(
-                    repositoryText, "repository"
-                );
-                root.aurUpdates = root.parsePackageUpdates(aurText, "aur");
-                root.updateDetailsState = "ready";
-                root.updateLastChecked = Qt.formatDateTime(
-                    new Date(), "dd.MM · HH:mm"
-                );
-                const total = root.repositoryUpdates.length
-                    + root.aurUpdates.length;
-                const baseMessage = total > 0
-                    ? total + " обновлений найдено"
-                    : "Установлены свежие версии";
-                root.updateDetailsMessage =
-                    root.capabilityAvailable("paru")
-                    ? baseMessage
-                    : baseMessage + " · AUR не проверен: paru недоступен";
             }
         }
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 && root.updateDetailsState === "checking") {
+            if (exitCode !== 0) {
+                root.updateDetailsMessage = I18n.tr("Проверка не завершилась. Проверь подключение к сети.");
                 root.updateDetailsState = "error";
-                root.updateDetailsMessage =
-                    "Проверка не завершилась. Проверь подключение к сети.";
             }
         }
     }
@@ -543,22 +551,21 @@ QtObject {
             if (running) {
                 root.updateDetailsState = "installing";
                 root.updateDetailsMessage =
-                    "Устанавливаем системные пакеты…";
+                    I18n.tr("Устанавливаем системные пакеты…");
             }
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
-                root.updateDetailsMessage = "Системные пакеты обновлены";
+                root.updateDetailsMessage = I18n.tr("Системные пакеты обновлены");
                 root.updateDetailsState = "ready";
                 root.refreshUpdates();
-                root.updates.refresh();
             } else {
                 root.updateDetailsState = "error";
                 root.updateDetailsMessage = exitCode === 75
-                    ? "База пакетов занята другим процессом"
+                    ? I18n.tr("База пакетов занята другим процессом")
                     : exitCode === 126
-                        ? "Авторизация отменена"
-                        : "Обновление завершилось с ошибкой " + exitCode;
+                        ? I18n.tr("Авторизация отменена")
+                        : I18n.tr("Обновление завершилось с ошибкой ") + exitCode;
             }
         }
     }
@@ -584,7 +591,7 @@ QtObject {
         onRunningChanged: {
             if (running) {
                 root.storageScanState = "checking";
-                root.storageActionMessage = "Анализируем хранилище…";
+                root.storageActionMessage = I18n.tr("Анализируем хранилище…");
             }
         }
         stdout: StdioCollector {
@@ -593,7 +600,7 @@ QtObject {
                 if (marker < 0) {
                     root.storageScanState = "error";
                     root.storageActionMessage =
-                        "Не удалось разобрать результаты анализа";
+                        I18n.tr("Не удалось разобрать результаты анализа");
                     return;
                 }
                 const values = {};
@@ -606,32 +613,32 @@ QtObject {
                 root.trashSize = root.formatBytes(values.TRASH);
                 root.journalSize = (values.JOURNAL || "—")
                     .replace(".", ",")
-                    .replace(/K$/, " КБ")
-                    .replace(/M$/, " МБ")
-                    .replace(/G$/, " ГБ")
-                    .replace(/T$/, " ТБ");
+                    .replace(/K$/, I18n.tr(" КБ"))
+                    .replace(/M$/, I18n.tr(" МБ"))
+                    .replace(/G$/, I18n.tr(" ГБ"))
+                    .replace(/T$/, I18n.tr(" ТБ"));
                 root.orphanPackages = text.slice(
                     marker + "__ORPHANS__".length
                 ).split("\n").map(line => line.trim()).filter(
                     line => line.length > 0
                 );
-                root.storageScanState = "ready";
                 const unavailable = [];
                 if (values.PACMAN_AVAILABLE !== "1")
                     unavailable.push("pacman");
                 if (values.JOURNAL_AVAILABLE !== "1")
                     unavailable.push("journalctl");
                 root.storageActionMessage = unavailable.length > 0
-                    ? "Часть данных недоступна: "
+                    ? I18n.tr("Часть данных недоступна: ")
                         + unavailable.join(", ")
-                    : "Анализ завершён";
+                    : I18n.tr("Анализ завершён");
+                root.storageScanState = "ready";
             }
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0 && root.storageScanState === "checking") {
                 root.storageScanState = "error";
                 root.storageActionMessage =
-                    "Анализ завершился с ошибкой " + exitCode;
+                    I18n.tr("Анализ завершился с ошибкой ") + exitCode;
             }
         }
     }
@@ -640,12 +647,12 @@ QtObject {
         id: storageCleanup
         onRunningChanged: {
             if (running)
-                root.storageActionMessage = "Выполняем очистку…";
+                root.storageActionMessage = I18n.tr("Выполняем очистку…");
         }
         onExited: (exitCode, exitStatus) => {
             root.storageActionMessage = exitCode === 0
-                ? "Очистка завершена"
-                : "Очистка отменена или завершилась с ошибкой";
+                ? I18n.tr("Очистка завершена")
+                : I18n.tr("Очистка отменена или завершилась с ошибкой");
             root.refreshStorage();
             if (!diskUsageRead.running)
                 diskUsageRead.running = true;
@@ -665,7 +672,7 @@ QtObject {
                         ? Qt.formatDateTime(
                             new Date(data.last_scan), "dd.MM · HH:mm"
                         )
-                        : "ещё не запускался";
+                        : I18n.tr("ещё не запускался");
                 } catch (error) {
                     console.warn("Miko Watch state parse failed:", error);
                 }
@@ -709,8 +716,8 @@ QtObject {
                 const formatFree = value => {
                     const gib = Number(value) / 1073741824;
                     return gib >= 1000
-                        ? (gib / 1024).toFixed(1) + " ТБ"
-                        : gib.toFixed(0) + " ГБ";
+                        ? (gib / 1024).toFixed(1) + I18n.tr(" ТБ")
+                        : gib.toFixed(0) + I18n.tr(" ГБ");
                 };
                 for (const row of text.trim().split("\n")) {
                     const [name, payload] = row.split("=");

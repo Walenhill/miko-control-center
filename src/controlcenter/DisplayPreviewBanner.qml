@@ -31,15 +31,15 @@ Rectangle {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
-            StyledText { text: "Оставить новую схему?"; color: root.style.ink; font.weight: Font.DemiBold }
+            StyledText { text: I18n.tr("Оставить новую схему?"); color: root.style.ink; font.weight: Font.DemiBold }
             StyledText {
-                text: "Автовозврат через " + root.seconds + " сек."
+                text: I18n.tr("Автовозврат через ") + root.seconds + I18n.tr(" сек.")
                 color: root.style.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.smaller
             }
         }
-        MikoButton { style: root.style; icon: "undo"; text: "Вернуть"; onClicked: root.rollback() }
-        MikoButton { style: root.style; icon: "check"; text: "До перезапуска"; onClicked: root.confirm() }
-        MikoButton { style: root.style; icon: "save"; text: "Сохранить"; onClicked: root.save() }
+        MikoButton { style: root.style; icon: "undo"; text: I18n.tr("Вернуть"); onClicked: root.rollback() }
+        MikoButton { style: root.style; icon: "check"; text: I18n.tr("До перезапуска"); onClicked: root.confirm() }
+        MikoButton { style: root.style; icon: "save"; text: I18n.tr("Сохранить"); onClicked: root.save() }
     }
 }

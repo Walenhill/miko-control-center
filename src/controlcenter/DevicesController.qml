@@ -28,7 +28,7 @@ QtObject {
     function refreshUsb() {
         if (root.capabilities.ready && !root.capabilities.has("lsusb")) {
             root.usbLoaded = true;
-            root.usbError = "Команда lsusb не установлена";
+            root.usbError = I18n.tr("Команда lsusb не установлена");
             return;
         }
         if (!usbDevicesRead.running)
@@ -47,7 +47,7 @@ QtObject {
         onExited: (exitCode, exitStatus) => {
             root.usbLoaded = true;
             root.usbError = exitCode === 0
-                ? "" : "Не удалось прочитать список USB-устройств";
+                ? "" : I18n.tr("Не удалось прочитать список USB-устройств");
         }
         stdout: StdioCollector {
             onStreamFinished: {
@@ -66,15 +66,15 @@ QtObject {
                             rawName: name,
                             name: isHeadset ? "Fifine H6"
                                 : isMysticLight
-                                    ? "Подсветка MSI Mystic Light"
+                                    ? I18n.tr("Подсветка MSI Mystic Light")
                                     : isReceiver
-                                        ? "Беспроводной ресивер" : name,
-                            description: isHeadset ? "USB-гарнитура"
+                                        ? I18n.tr("Беспроводной ресивер") : name,
+                            description: isHeadset ? I18n.tr("USB-гарнитура")
                                 : isMysticLight
-                                    ? "Внутренний RGB-контроллер материнки"
+                                    ? I18n.tr("Внутренний RGB-контроллер материнки")
                                     : isReceiver
-                                        ? "Мышь или клавиатура · 2.4 ГГц"
-                                        : "USB-устройство",
+                                        ? I18n.tr("Мышь или клавиатура · 2.4 ГГц")
+                                        : I18n.tr("USB-устройство"),
                             icon: isHeadset ? "headphones"
                                 : isReceiver ? "mouse"
                                     : isMysticLight ? "lightbulb" : "usb"

@@ -6,108 +6,84 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
-    required property var style
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var entries
+    signal refreshRequested()
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: 14
 
-    RowLayout {
-        Layout.fillWidth: true
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Автозапуск")
+        subtitle: I18n.tr("Приложения и фоновые процессы, запускаемые при входе в систему")
 
-        StyledText {
-            Layout.fillWidth: true
-            text: "Автозапуск"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: root.entries.length + " записей"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
+        RowLayout {
+            spacing: 8
+
+            MikoBadge {
+                style: root.ui
+                text: (root.entries ? root.entries.length : 0) + I18n.tr(" записей")
+                tone: "neutral"
+            }
+
+            MikoButton {
+                style: root.ui
+                icon: "refresh"
+                text: I18n.tr("Обновить")
+                onClicked: root.refreshRequested()
+            }
         }
     }
 
-    GridLayout {
-        Layout.fillWidth: true
-        columns: width > 760 ? 2 : 1
-        columnSpacing: 10
-        rowSpacing: 10
+    MikoListGroup {
+        visible: root.entries && root.entries.length > 0
+        style: root.ui
 
         Repeater {
-            model: root.entries.slice(0, 8)
+            model: root.entries
 
-            delegate: MikoSurface {
-                id: autostartCard
-
+            delegate: MikoListRow {
+                id: rowDelegate
                 required property var modelData
+                required property int index
 
-                style: root.style
-                Layout.fillWidth: true
-                implicitHeight: 72
+                style: root.ui
+                title: rowDelegate.modelData.name ? rowDelegate.modelData.name : I18n.tr("Без названия")
+                subtitle: rowDelegate.modelData.execLine ? rowDelegate.modelData.execLine : ""
+                icon: "rocket_launch"
+                dividerVisible: rowDelegate.index < (root.entries ? root.entries.length - 1 : 0)
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 14
-                    anchors.rightMargin: 14
-                    spacing: 12
-
-                    MaterialSymbol {
-                        text: "start"
-                        iconSize: 20
-                        color: root.style.mutedInk
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-                        spacing: 0
-
-                        StyledText {
-                            Layout.fillWidth: true
-                            text: autostartCard.modelData.name
-                            color: root.style.ink
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.Medium
-                            elide: Text.ElideRight
-                        }
-                        StyledText {
-                            Layout.fillWidth: true
-                            text: autostartCard.modelData.execLine
-                            color: root.style.mutedInk
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            elide: Text.ElideRight
-                        }
-                    }
-                    Rectangle {
-                        implicitWidth: 8
-                        implicitHeight: 8
-                        radius: 4
-                        color: root.style.selectedSurface
-                    }
+                MikoBadge {
+                    style: root.ui
+                    text: I18n.tr("Активно")
+                    tone: "success"
+                    icon: "check"
                 }
             }
         }
     }
 
     MikoSurface {
-        visible: root.entries.length === 0
-        style: root.style
+        visible: !root.entries || root.entries.length === 0
+        style: root.ui
         Layout.fillWidth: true
-        implicitHeight: 72
+        implicitHeight: 88
 
         RowLayout {
             anchors.centerIn: parent
-            spacing: 9
+            spacing: 10
 
             MaterialSymbol {
-                text: "start"
-                iconSize: 20
-                color: root.style.mutedInk
+                text: "rocket_launch"
+                iconSize: 22
+                color: root.ui.mutedInk
             }
             StyledText {
-                text: "Активных записей автозапуска не найдено"
-                color: root.style.mutedInk
+                text: I18n.tr("Активных записей автозапуска не найдено")
+                color: root.ui.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.small
             }
         }

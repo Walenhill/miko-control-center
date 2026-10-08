@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 
-Rectangle {
+MikoSurface {
     id: root
 
     required property var style
@@ -13,66 +13,55 @@ Rectangle {
     property real progress: -1
 
     Layout.fillWidth: true
-    implicitHeight: 84
-    radius: style.radiusControl
-    color: style.sectionSurface
-    border.width: 1
-    border.color: style.hairline
-    antialiasing: true
+    implicitHeight: 88
+    interactive: false
 
     ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 13
-        spacing: 7
+        anchors {
+            fill: parent
+            margins: 14
+        }
+        spacing: 8
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 10
 
-            MaterialSymbol {
-                text: root.icon
-                iconSize: 18
-                color: root.style.mutedInk
+            MikoIconDisc {
+                style: root.style
+                icon: root.icon
+                accented: root.progress >= 0.75
             }
-            StyledText {
+
+            ColumnLayout {
                 Layout.fillWidth: true
-                text: root.title
-                color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.small
-                font.weight: Font.Medium
-                elide: Text.ElideRight
-            }
-            StyledText {
-                text: root.value
-                color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.small
-                font.weight: Font.DemiBold
+                spacing: 1
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.title
+                    color: root.style.mutedInk
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    elide: Text.ElideRight
+                }
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.value
+                    color: root.style.ink
+                    font.pixelSize: Appearance.font.pixelSize.large
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                }
             }
         }
 
-        Rectangle {
+        MikoProgressBar {
             visible: root.progress >= 0
             Layout.fillWidth: true
-            implicitHeight: 7
-            radius: 4
-            color: root.style.controlSurface
-            antialiasing: true
-
-            Rectangle {
-                width: parent.width * Math.max(0, Math.min(1, root.progress))
-                height: parent.height
-                radius: parent.radius
-                color: root.style.selectedSurface
-                antialiasing: true
-
-                Behavior on width {
-                    NumberAnimation {
-                        duration: root.style.motionNormal
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: root.style.motionCurve
-                    }
-                }
-            }
+            style: root.style
+            value: root.progress
+            tone: root.progress > 0.88 ? "error" : (root.progress > 0.72 ? "warning" : "accent")
         }
     }
 }

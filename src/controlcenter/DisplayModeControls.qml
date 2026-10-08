@@ -3,70 +3,92 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 
-GridLayout {
+ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
 
     Layout.fillWidth: true
-    columns: width > 820 ? 2 : 1
-    columnSpacing: 12
-    rowSpacing: 12
+    spacing: 16
 
-    Rectangle {
+    readonly property var monitor: root.controller.selectedMonitor()
+    readonly property real currentScale: (monitor && monitor.scale !== undefined) ? monitor.scale : 1
+    readonly property int currentTransform: (monitor && monitor.transform !== undefined) ? monitor.transform : 0
+
+    // Section 1: Modes and Refresh Rates
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Разрешение и частота обновления")
+        subtitle: I18n.tr("Переключение с безопасным 15-секундным таймером отката")
+        badgeText: root.monitor ? root.monitor.name : ""
+    }
+
+    MikoSurface {
         Layout.fillWidth: true
-        implicitHeight: modeContent.implicitHeight + 32
-        radius: root.style.radiusSection
-        color: root.style.sectionSurface
-        border.width: 1
-        border.color: root.style.hairline
+        style: root.ui
 
         ColumnLayout {
-            id: modeContent
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 16
-            }
-            spacing: 10
+            anchors.fill: parent
+            anchors.margins: 18
+            spacing: 14
+
             RowLayout {
                 Layout.fillWidth: true
+                spacing: 12
+
                 MikoIconDisc {
-                    style: root.style
+                    style: root.ui
                     icon: "display_settings"
+                    accented: true
                 }
+
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 0
+                    spacing: 2
+
                     StyledText {
-                        text: "Режим и герцовка"
-                        color: root.style.ink
+                        text: I18n.tr("Доступные видеорежимы")
+                        color: root.ui.ink
                         font.weight: Font.DemiBold
+                        font.pixelSize: Appearance.font.pixelSize.normal
                     }
+
                     StyledText {
-                        text: "Временно, с автоматическим откатом"
-                        color: root.style.mutedInk
+                        text: root.monitor
+                            ? (root.monitor.width + "×" + root.monitor.height + " @ " + Math.round(root.monitor.refreshRate) + I18n.tr(" Гц (текущий)"))
+                            : I18n.tr("Экран не выбран")
+                        color: root.ui.mutedInk
                         font.pixelSize: Appearance.font.pixelSize.smaller
                     }
                 }
             }
+
             Flow {
                 Layout.fillWidth: true
-                spacing: 7
+                spacing: 8
+
                 Repeater {
-                    model: root.controller.selectedMonitor()
-                        ? root.controller.selectedMonitor().availableModes
-                            .filter((item, index, values) =>
-                                values.indexOf(item) === index
-                            ).slice(0, 8)
+                    model: root.monitor
+                        ? root.monitor.availableModes
+                            .filter((item, index, values) => values.indexOf(item) === index)
+                            .slice(0, 10)
                         : []
-                    MikoButton {
+
+                    delegate: MikoButton {
                         required property string modelData
-                        style: root.style
+                        style: root.ui
                         icon: ""
-                        text: modelData.replace("Hz", "")
+                        text: modelData.replace("Hz", I18n.tr(" Гц"))
+
+                        readonly property bool isCurrent: Boolean(root.monitor
+                            && modelData.indexOf(root.monitor.width + "x" + root.monitor.height) === 0
+                            && Math.abs(parseFloat(modelData.split("@")[1]) - root.monitor.refreshRate) < 1.0)
+
+                        selected: isCurrent
+
                         onClicked: root.controller.runPreview([
                             "apply",
                             root.controller.selectedMonitor().name,
@@ -79,93 +101,154 @@ GridLayout {
         }
     }
 
-    Rectangle {
+    // Section 2: Scale and Orientation
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Масштаб и ориентация")
+        subtitle: I18n.tr("Текущий масштаб: ") + root.currentScale + "× · "
+            + (root.currentTransform === 0 ? I18n.tr("Альбомная") : I18n.tr("Портретная"))
+    }
+
+    MikoSurface {
         Layout.fillWidth: true
-        implicitHeight: scaleContent.implicitHeight + 32
-        radius: root.style.radiusSection
-        color: root.style.sectionSurface
-        border.width: 1
-        border.color: root.style.hairline
+        style: root.ui
 
         ColumnLayout {
-            id: scaleContent
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 16
-            }
-            spacing: 10
-            RowLayout {
+            anchors.fill: parent
+            anchors.margins: 18
+            spacing: 16
+
+            // Scale controls
+            ColumnLayout {
                 Layout.fillWidth: true
-                MikoIconDisc {
-                    style: root.style
-                    icon: "zoom_out_map"
-                }
-                ColumnLayout {
+                spacing: 8
+
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: 0
-                    StyledText {
-                        text: "Масштаб и ориентация"
-                        color: root.style.ink
-                        font.weight: Font.DemiBold
+                    spacing: 12
+
+                    MikoIconDisc {
+                        style: root.ui
+                        icon: "zoom_out_map"
                     }
-                    StyledText {
-                        text: "Сейчас "
-                            + (root.controller.selectedMonitor()?.scale ?? 1)
-                            + "×"
-                        color: root.style.mutedInk
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        StyledText {
+                            text: I18n.tr("Масштабирование интерфейса")
+                            color: root.ui.ink
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                        }
+
+                        StyledText {
+                            text: I18n.tr("Коэффициент масштаба для текущего экрана")
+                            color: root.ui.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Repeater {
+                        model: [0.75, 1, 1.25, 1.5, 2]
+
+                        delegate: MikoButton {
+                            required property real modelData
+                            Layout.fillWidth: true
+                            style: root.ui
+                            icon: ""
+                            text: modelData + "×"
+                            enabled: root.monitor !== null
+                            selected: Math.abs(root.currentScale - modelData) < 0.01
+                            onClicked: root.controller.runPreview([
+                                "apply",
+                                root.controller.selectedMonitor().name,
+                                "--scale",
+                                String(modelData)
+                            ])
+                        }
                     }
                 }
             }
-            Flow {
+
+            Rectangle {
                 Layout.fillWidth: true
-                spacing: 7
-                Repeater {
-                    model: [0.75, 1, 1.25, 1.5, 2]
+                height: 1
+                color: root.ui.hairline
+            }
+
+            // Orientation controls
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+
+                    MikoIconDisc {
+                        style: root.ui
+                        icon: "screen_rotation"
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        StyledText {
+                            text: I18n.tr("Ориентация экрана")
+                            color: root.ui.ink
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                        }
+
+                        StyledText {
+                            text: I18n.tr("Поворот рабочего пространства")
+                            color: root.ui.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
                     MikoButton {
-                        required property real modelData
-                        style: root.style
-                        icon: ""
-                        text: modelData + "×"
-                        enabled: root.controller.selectedMonitor() !== null
+                        Layout.fillWidth: true
+                        style: root.ui
+                        icon: "stay_current_landscape"
+                        text: I18n.tr("Альбомная")
+                        enabled: root.monitor !== null
+                        selected: root.currentTransform === 0
                         onClicked: root.controller.runPreview([
                             "apply",
                             root.controller.selectedMonitor().name,
-                            "--scale",
-                            String(modelData)
+                            "--transform",
+                            "0"
                         ])
                     }
-                }
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                MikoButton {
-                    Layout.fillWidth: true
-                    style: root.style
-                    icon: "screen_rotation"
-                    text: "Альбомная"
-                    enabled: root.controller.selectedMonitor() !== null
-                    onClicked: root.controller.runPreview([
-                        "apply",
-                        root.controller.selectedMonitor().name,
-                        "--transform",
-                        "0"
-                    ])
-                }
-                MikoButton {
-                    Layout.fillWidth: true
-                    style: root.style
-                    icon: "screen_rotation"
-                    text: "Портретная"
-                    enabled: root.controller.selectedMonitor() !== null
-                    onClicked: root.controller.runPreview([
-                        "apply",
-                        root.controller.selectedMonitor().name,
-                        "--transform",
-                        "1"
-                    ])
+
+                    MikoButton {
+                        Layout.fillWidth: true
+                        style: root.ui
+                        icon: "stay_current_portrait"
+                        text: I18n.tr("Портретная")
+                        enabled: root.monitor !== null
+                        selected: root.currentTransform === 1
+                        onClicked: root.controller.runPreview([
+                            "apply",
+                            root.controller.selectedMonitor().name,
+                            "--transform",
+                            "1"
+                        ])
+                    }
                 }
             }
         }

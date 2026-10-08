@@ -29,6 +29,8 @@ check_command() {
 printf 'Runtime\n'
 check_command qs required "Quickshell launcher"
 check_command bash required "controller command runner"
+check_command jq required "structured package query results"
+check_command python3 required "validated settings snapshots"
 check_command systemctl required "service inspection"
 check_command wpctl required "PipeWire controls"
 check_command hyprctl required "Hyprland display integration"

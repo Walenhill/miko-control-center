@@ -10,23 +10,12 @@ ColumnLayout {
     required property var style
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: root.style.gapControl
 
-    RowLayout {
-        Layout.fillWidth: true
-        Layout.topMargin: 6
-        StyledText {
-            Layout.fillWidth: true
-            text: "Звуковые сцены"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "Быстрая смена характера звука"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
-        }
+    MikoSectionHeader {
+        style: root.style
+        title: I18n.tr("Звуковые сцены")
+        subtitle: I18n.tr("Быстрая смена характера звука")
     }
 
     GridLayout {
@@ -37,56 +26,55 @@ ColumnLayout {
 
         Repeater {
             model: [
-                { id: "night", title: "Ночь", subtitle: "28% · лимит 60%", icon: "bedtime" },
-                { id: "focus", title: "Фокус", subtitle: "48% · лимит 78%", icon: "headphones" },
-                { id: "open", title: "Свободно", subtitle: "Без ограничения", icon: "volume_up" }
+                { id: "night", title: I18n.tr("Ночь"), subtitle: I18n.tr("28% · лимит 60%"), icon: "bedtime" },
+                { id: "focus", title: I18n.tr("Фокус"), subtitle: I18n.tr("48% · лимит 78%"), icon: "headphones" },
+                { id: "open", title: I18n.tr("Свободно"), subtitle: I18n.tr("Без ограничения"), icon: "volume_up" }
             ]
-            delegate: Rectangle {
+            delegate: MikoSurface {
                 id: scene
                 required property var modelData
                 readonly property bool selected: root.controller.activeScene === modelData.id
 
                 Layout.fillWidth: true
-                implicitHeight: 76
-                radius: root.style.radiusSection
-                color: selected
-                    ? root.style.selectedSurface
-                    : (pointer.containsMouse ? root.style.hoverSurface : root.style.sectionSurface)
-                antialiasing: true
-
-                Behavior on color { ColorAnimation { duration: root.style.motionFast } }
+                style: root.style
+                softAccent: selected
+                interactive: true
+                onClicked: root.controller.applyScene(scene.modelData.id)
 
                 RowLayout {
-                    anchors { fill: parent; margins: 13 }
-                    MaterialSymbol {
-                        text: scene.modelData.icon
-                        iconSize: 21
-                        color: scene.selected ? root.style.selectedInk : root.style.ink
+                    anchors { fill: parent; margins: 14 }
+                    spacing: 11
+
+                    MikoIconDisc {
+                        style: root.style
+                        icon: scene.modelData.icon
+                        accented: scene.selected
                     }
+
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
+                        Layout.minimumWidth: 0
+                        spacing: 1
+
                         StyledText {
                             text: scene.modelData.title
-                            color: scene.selected ? root.style.selectedInk : root.style.ink
+                            color: root.style.ink
                             font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.Medium
+                            font.weight: scene.selected ? Font.DemiBold : Font.Medium
                         }
                         StyledText {
                             text: scene.modelData.subtitle
-                            color: scene.selected
-                                ? Qt.rgba(root.style.selectedInk.r, root.style.selectedInk.g, root.style.selectedInk.b, 0.72)
-                                : root.style.mutedInk
+                            color: root.style.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
-                }
-                MouseArea {
-                    id: pointer
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.controller.applyScene(scene.modelData.id)
+
+                    MaterialSymbol {
+                        visible: scene.selected
+                        text: "check_circle"
+                        iconSize: 19
+                        color: root.style.selectedSurface
+                    }
                 }
             }
         }

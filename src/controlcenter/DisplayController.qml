@@ -24,9 +24,10 @@ QtObject {
         const monitor = root.selectedMonitor();
         if (!monitor)
             return null;
-        return root.brightness.monitors.find(
+        const found = root.brightness.monitors.find(
             item => item.screen.name === monitor.name
-        ) ?? null;
+        );
+        return found ? found : null;
     }
 
     function bounds() {
@@ -46,7 +47,7 @@ QtObject {
     }
 
     function runPreview(arguments) {
-        root.actionMessage = "Применяем временно…";
+        root.actionMessage = I18n.tr("Применяем временно…");
         root.actionNeedsConfirm = true;
         actionProcess.exec([root.displayControl].concat(arguments));
     }
@@ -55,18 +56,18 @@ QtObject {
         confirmProcess.exec([root.displayControl, "confirm"]);
         root.previewActive = false;
         root.previewSeconds = 0;
-        root.actionMessage = "Изменения оставлены до перезапуска Hyprland";
+        root.actionMessage = I18n.tr("Изменения оставлены до перезапуска Hyprland");
     }
 
     function savePreview() {
         confirmProcess.exec([root.displayControl, "save"]);
         root.previewActive = false;
         root.previewSeconds = 0;
-        root.actionMessage = "Схема сохранена в пользовательский override";
+        root.actionMessage = I18n.tr("Схема сохранена в пользовательский override");
     }
 
     function rollbackPreview() {
-        root.actionMessage = "Возвращаем прежнюю схему…";
+        root.actionMessage = I18n.tr("Возвращаем прежнюю схему…");
         root.actionNeedsConfirm = false;
         actionProcess.exec([root.displayControl, "rollback"]);
     }
@@ -91,15 +92,15 @@ QtObject {
                     root.previewActive = true;
                     root.previewSeconds = 15;
                     root.actionMessage =
-                        "Проверь изображение и подтверди изменения";
+                        I18n.tr("Проверь изображение и подтверди изменения");
                 } else {
                     root.previewActive = false;
                     root.previewSeconds = 0;
-                    root.actionMessage = "Прежняя схема восстановлена";
+                    root.actionMessage = I18n.tr("Прежняя схема восстановлена");
                 }
             } else {
                 root.actionMessage =
-                    "Не удалось изменить конфигурацию экранов";
+                    I18n.tr("Не удалось изменить конфигурацию экранов");
             }
         }
     }

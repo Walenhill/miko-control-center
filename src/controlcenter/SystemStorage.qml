@@ -6,272 +6,181 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
 
-    Layout.topMargin: 6
-    spacing: 10
+    spacing: 16
 
-    component LabelText: StyledText {
-        color: root.style.ink
-        font.pixelSize: Appearance.font.pixelSize.small
-    }
-
-    component MutedText: StyledText {
-        color: root.style.mutedInk
-        font.pixelSize: Appearance.font.pixelSize.smaller
-    }
-
-    component SoftButton: MikoButton {
-        style: root.style
-    }
-
-    component ListGroup: MikoListGroup {
-        style: root.style
-    }
-
-    component ListRow: MikoListRow {
-        style: root.style
-    }
-
-    component ProgressStrip: Rectangle {
-        id: progressStrip
-
-        property real value: 0
-        property color fillColor: Appearance.colors.colPrimary
-
-        implicitHeight: 7
-        radius: 4
-        color: root.style.controlSurface
-        antialiasing: true
-
-        Rectangle {
-            width: parent.width * Math.max(
-                0, Math.min(1, progressStrip.value)
-            )
-            height: parent.height
-            radius: parent.radius
-            color: progressStrip.fillColor
-            antialiasing: true
-
-            Behavior on width {
-                NumberAnimation {
-                    duration: root.style.motionNormal
-                    easing.type: Easing.OutCubic
-                }
-            }
-        }
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-
-        LabelText {
-            Layout.fillWidth: true
-            text: "Хранилище"
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-
-        SoftButton {
-            icon: "refresh"
-            text: ""
-            implicitWidth: 42
-            onClicked: root.controller.refreshDiskUsage()
-        }
+    // Section 1: Disks
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Дисковые накопители")
+        subtitle: I18n.tr("Состояние файловых систем и свободное пространство")
+        actionText: I18n.tr("Обновить")
+        actionIcon: "refresh"
+        onActionClicked: root.controller.refreshDiskUsage()
     }
 
     GridLayout {
         Layout.fillWidth: true
         columns: width > 600 ? 2 : 1
-        columnSpacing: 10
-        rowSpacing: 10
+        columnSpacing: 12
+        rowSpacing: 12
 
         Repeater {
             model: [
                 {
-                    title: "Система и Home",
+                    title: I18n.tr("Система и Home"),
                     subtitle: "ADATA NVMe · Btrfs",
                     free: root.controller.rootDiskFree,
                     used: root.controller.rootDiskUsed,
                     icon: "hard_drive"
                 },
                 {
-                    title: "Архив",
-                    subtitle: "WD 2 ТБ · Ext4",
+                    title: I18n.tr("Архив"),
+                    subtitle: I18n.tr("WD 2 ТБ · Ext4"),
                     free: root.controller.hddDiskFree,
                     used: root.controller.hddDiskUsed,
                     icon: "database"
                 }
             ]
 
-            delegate: Rectangle {
+            delegate: MikoSurface {
                 required property var modelData
 
                 Layout.fillWidth: true
-                implicitHeight: 132
-                radius: root.style.radiusSection
-                color: root.style.sectionSurface
-                border.width: 1
-                border.color: Qt.rgba(
-                    root.style.ink.r,
-                    root.style.ink.g,
-                    root.style.ink.b,
-                    0.055
-                )
-                antialiasing: true
+                style: root.ui
 
                 ColumnLayout {
-                    anchors {
-                        fill: parent
-                        margins: 15
-                    }
-                    spacing: 6
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    spacing: 12
 
                     RowLayout {
                         Layout.fillWidth: true
+                        spacing: 12
 
-                        MaterialSymbol {
-                            text: modelData.icon
-                            iconSize: 21
-                            color: root.style.mutedInk
+                        MikoIconDisc {
+                            style: root.ui
+                            icon: modelData.icon
+                            accented: true
                         }
 
-                        LabelText {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            text: modelData.title
-                            font.weight: Font.DemiBold
+                            spacing: 2
+
+                            StyledText {
+                                text: modelData.title
+                                color: root.ui.ink
+                                font.weight: Font.DemiBold
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                            }
+
+                            StyledText {
+                                text: modelData.subtitle
+                                color: root.ui.mutedInk
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                            }
+                        }
+
+                        MikoBadge {
+                            style: root.ui
+                            text: Math.round(modelData.used * 100) + "%"
+                            tone: modelData.used > 0.90 ? "warning" : "accent"
                         }
                     }
 
-                    MutedText {
-                        text: modelData.subtitle
-                    }
-
-                    Item {
-                        Layout.fillHeight: true
-                    }
-
-                    ProgressStrip {
+                    MikoProgressBar {
                         Layout.fillWidth: true
-                        value: modelData.used
+                        style: root.ui
+                        value: Math.max(0, Math.min(1, modelData.used))
+                        tone: modelData.used > 0.90 ? "warning" : "accent"
                     }
 
-                    MutedText {
-                        text: modelData.free + " свободно"
+                    StyledText {
+                        text: modelData.free + I18n.tr(" свободно")
+                        color: root.ui.mutedInk
+                        font.pixelSize: Appearance.font.pixelSize.smaller
                     }
                 }
             }
         }
     }
 
-    Item {
+    // Section 2: Cleanup Tools
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Очистка и освобождение места")
+        subtitle: root.controller.storageScanState === "checking"
+            ? I18n.tr("Выполняется сканирование…")
+            : (root.controller.storageActionMessage || I18n.tr("Удаление временных кэшей и пакетов"))
+        actionText: I18n.tr("Сканировать")
+        actionIcon: "refresh"
+        actionEnabled: !root.controller.storageScanAction.running && !root.controller.storageCleanupAction.running
+        onActionClicked: root.controller.refreshStorage()
+    }
+
+    MikoListGroup {
+        style: root.ui
         Layout.fillWidth: true
-        implicitHeight: storageToolsContent.implicitHeight
 
-        ColumnLayout {
-            id: storageToolsContent
-
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-            }
-            spacing: 10
-
-            RowLayout {
-                Layout.fillWidth: true
-
-                LabelText {
-                    Layout.fillWidth: true
-                    text: "Можно освободить"
-                    font.weight: Font.DemiBold
+        Repeater {
+            model: [
+                {
+                    title: I18n.tr("Кэш пакетов Pacman"),
+                    subtitle: I18n.tr("Оставить две последние версии пакетов"),
+                    value: root.controller.packageCacheSize,
+                    icon: "package_2",
+                    action: "cache"
+                },
+                {
+                    title: I18n.tr("Корзина пользователя"),
+                    subtitle: I18n.tr("Удалённые файлы и документы"),
+                    value: root.controller.trashSize,
+                    icon: "delete",
+                    action: "trash"
+                },
+                {
+                    title: I18n.tr("Системный журнал Systemd"),
+                    subtitle: I18n.tr("Оставить логи за последние 14 дней"),
+                    value: root.controller.journalSize,
+                    icon: "description",
+                    action: "journal"
+                },
+                {
+                    title: I18n.tr("Осиротевшие зависимости"),
+                    subtitle: root.controller.orphanPackages.length > 0
+                        ? root.controller.orphanPackages.join(", ")
+                        : I18n.tr("Ненужные пакеты не обнаружены"),
+                    value: String(root.controller.orphanPackages.length),
+                    icon: "inventory_2",
+                    action: "orphans"
                 }
+            ]
 
-                MutedText {
-                    text: root.controller.storageScanState === "checking"
-                        ? "Считаем…"
-                        : root.controller.storageActionMessage
-                }
+            delegate: MikoListRow {
+                id: cleanupItem
+                required property var modelData
+                required property int index
 
-                SoftButton {
-                    icon: "refresh"
-                    text: ""
-                    implicitWidth: 42
-                    enabled: !root.controller.storageScanAction.running
+                style: root.ui
+                title: modelData.title
+                subtitle: modelData.subtitle
+                icon: modelData.icon
+                value: modelData.value
+                dividerVisible: index < 3
+
+                MikoButton {
+                    style: root.ui
+                    icon: "cleaning_services"
+                    text: I18n.tr("Очистить")
+                    enabled: root.controller.storageScanState === "ready"
                         && !root.controller.storageCleanupAction.running
-                    onClicked: root.controller.refreshStorage()
-                }
-            }
-
-            ListGroup {
-                Repeater {
-                    model: [
-                        {
-                            title: "Кэш пакетов",
-                            subtitle: "Оставить две последние версии",
-                            value: root.controller.packageCacheSize,
-                            icon: "package_2",
-                            action: "cache"
-                        },
-                        {
-                            title: "Корзина",
-                            subtitle: "Удалённые пользовательские файлы",
-                            value: root.controller.trashSize,
-                            icon: "delete",
-                            action: "trash"
-                        },
-                        {
-                            title: "Системный журнал",
-                            subtitle: "Оставить записи за 14 дней",
-                            value: root.controller.journalSize,
-                            icon: "description",
-                            action: "journal"
-                        },
-                        {
-                            title: "Осиротевшие пакеты",
-                            subtitle: root.controller.orphanPackages.length > 0
-                                ? root.controller.orphanPackages.join(", ")
-                                : "Ненужные зависимости не найдены",
-                            value: String(
-                                root.controller.orphanPackages.length
-                            ),
-                            icon: "inventory_2",
-                            action: "orphans"
-                        }
-                    ]
-
-                    delegate: ListRow {
-                        id: cleanupItem
-
-                        required property var modelData
-                        required property int index
-
-                        title: modelData.title
-                        subtitle: modelData.subtitle
-                        icon: modelData.icon
-                        value: modelData.value
-                        dividerVisible: index < 3
-
-                        SoftButton {
-                            icon: "cleaning_services"
-                            text: ""
-                            implicitWidth: 40
-                            enabled:
-                                root.controller.storageScanState === "ready"
-                                && !root.controller
-                                    .storageCleanupAction.running
-                                && !(
-                                    cleanupItem.modelData.action === "orphans"
-                                    && root.controller
-                                        .orphanPackages.length === 0
-                                )
-                            onClicked:
-                                root.controller.requestStorageCleanup(
-                                    cleanupItem.modelData.action
-                                )
-                        }
-                    }
+                        && !(cleanupItem.modelData.action === "orphans" && root.controller.orphanPackages.length === 0)
+                    onClicked: root.controller.requestStorageCleanup(cleanupItem.modelData.action)
                 }
             }
         }

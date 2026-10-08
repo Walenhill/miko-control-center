@@ -3,64 +3,128 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 
-MikoSurface {
+ColumnLayout {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property real timeoutSeconds
+    property bool notificationsSilent: false
 
     signal timeoutChangeRequested(real seconds)
+    signal toggleSilentRequested()
 
     Layout.fillWidth: true
-    implicitHeight: 112
+    spacing: 14
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 15
-        spacing: 7
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Уведомления")
+        subtitle: I18n.tr("Режим фокусировки и параметры экранных баннеров")
+    }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
+    MikoListGroup {
+        style: root.ui
 
-            MikoIconDisc {
-                style: root.style
-                icon: "notifications_active"
+        MikoToggleRow {
+            style: root.ui
+            title: I18n.tr("Режим «Не беспокоить»")
+            subtitle: root.notificationsSilent
+                ? I18n.tr("Всплывающие окна заглушены")
+                : I18n.tr("Показывать всплывающие баннеры в обычном режиме")
+            icon: root.notificationsSilent ? "notifications_off" : "notifications_active"
+            checked: root.notificationsSilent
+            onToggled: () => root.toggleSilentRequested()
+        }
+    }
+
+    MikoSurface {
+        style: root.ui
+        Layout.fillWidth: true
+        implicitHeight: durationColumn.implicitHeight + 32
+
+        ColumnLayout {
+            id: durationColumn
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: 16
             }
-            ColumnLayout {
+            spacing: 14
+
+            RowLayout {
                 Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                spacing: 0
+                spacing: 12
+
+                MikoIconDisc {
+                    style: root.ui
+                    icon: "timer"
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    spacing: 1
+
+                    StyledText {
+                        text: I18n.tr("Длительность показа")
+                        color: root.ui.ink
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.weight: Font.Medium
+                    }
+                    StyledText {
+                        text: I18n.tr("Время отображения уведомления на экране до исчезновения")
+                        color: root.ui.mutedInk
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                    }
+                }
+
+                MikoBadge {
+                    style: root.ui
+                    text: Math.round(root.timeoutSeconds) + I18n.tr(" сек.")
+                    icon: "schedule"
+                    tone: "accent"
+                }
+            }
+
+            StyledSlider {
+                Layout.fillWidth: true
+                from: 2
+                to: 20
+                stepSize: 1
+                value: root.timeoutSeconds
+                usePercentTooltip: false
+                tooltipContent: Math.round(value) + I18n.tr(" сек.")
+                configuration: StyledSlider.Configuration.XS
+                onMoved: root.timeoutChangeRequested(Math.round(value))
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
 
                 StyledText {
-                    text: "Поведение уведомлений"
-                    color: root.style.ink
-                    font.pixelSize: Appearance.font.pixelSize.small
-                    font.weight: Font.Medium
-                }
-                StyledText {
-                    text: "Время показа всплывающей карточки"
-                    color: root.style.mutedInk
+                    text: I18n.tr("Быстрый выбор:")
+                    color: root.ui.mutedInk
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
-            }
-            StyledText {
-                text: Math.round(root.timeoutSeconds) + " сек."
-                color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.small
-                font.weight: Font.DemiBold
-            }
-        }
 
-        StyledSlider {
-            Layout.fillWidth: true
-            from: 2
-            to: 20
-            stepSize: 1
-            value: root.timeoutSeconds
-            usePercentTooltip: false
-            tooltipContent: Math.round(value) + " сек."
-            configuration: StyledSlider.Configuration.XS
-            onMoved: root.timeoutChangeRequested(Math.round(value))
+                Repeater {
+                    model: [3, 5, 8, 12, 15]
+
+                    delegate: MikoButton {
+                        required property int modelData
+                        style: root.ui
+                        text: modelData + I18n.tr(" сек.")
+                        selected: Math.round(root.timeoutSeconds) === modelData
+                        onClicked: root.timeoutChangeRequested(modelData)
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
+            }
         }
     }
 }

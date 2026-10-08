@@ -6,132 +6,89 @@ import qs.modules.common.widgets
 Rectangle {
     id: root
 
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var controller
-    required property var style
 
-    implicitHeight: 190
-    radius: root.style.radiusWindow
-    color: Qt.rgba(
-        Appearance.colors.colPrimary.r,
-        Appearance.colors.colPrimary.g,
-        Appearance.colors.colPrimary.b,
-        0.15
-    )
+    implicitHeight: 184
+    radius: root.ui.radiusSection
+    color: root.ui.sectionSurface
     border.width: 1
-    border.color: Qt.rgba(
-        root.style.ink.r,
-        root.style.ink.g,
-        root.style.ink.b,
-        0.06
-    )
+    border.color: root.ui.hairline
     antialiasing: true
-
-    component LabelText: StyledText {
-        color: root.style.ink
-        font.pixelSize: Appearance.font.pixelSize.small
-    }
-
-    component MutedText: StyledText {
-        color: root.style.mutedInk
-        font.pixelSize: Appearance.font.pixelSize.smaller
-    }
 
     RowLayout {
         anchors {
             fill: parent
-            margins: 21
+            margins: 20
         }
         spacing: 24
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 5
+            spacing: 8
 
-            Rectangle {
-                implicitWidth: machineState.implicitWidth + 20
-                implicitHeight: 29
-                radius: Appearance.rounding.full
-                color: root.style.sectionSurface
-
-                RowLayout {
-                    id: machineState
-
-                    anchors.centerIn: parent
-                    spacing: 6
-
-                    Rectangle {
-                        width: 7
-                        height: 7
-                        radius: 4
-                        color: root.controller.watchActiveCount > 0
-                            ? Appearance.colors.colError
-                            : Appearance.colors.colPrimary
-                    }
-
-                    LabelText {
-                        text: root.controller.watchActiveCount > 0
-                            ? "СИСТЕМЕ НУЖНО ВНИМАНИЕ"
-                            : "СИСТЕМА В ПОРЯДКЕ"
-                        font.pixelSize: Appearance.font.pixelSize.smallest
-                        font.weight: Font.Bold
-                    }
-                }
+            MikoBadge {
+                style: root.ui
+                icon: root.controller.watchActiveCount > 0 ? "warning" : "verified"
+                text: root.controller.watchActiveCount > 0
+                    ? I18n.tr("СИСТЕМЕ НУЖНО ВНИМАНИЕ")
+                    : I18n.tr("СИСТЕМА В ПОРЯДКЕ")
+                tone: root.controller.watchActiveCount > 0 ? "warning" : "accent"
             }
 
-            LabelText {
-                text: root.controller.distroName
-                font.pixelSize: 28
+            StyledText {
+                text: root.controller.distroName || "Arch Linux"
+                color: root.ui.ink
+                font.pixelSize: 26
                 font.weight: Font.DemiBold
             }
 
-            MutedText {
-                text: root.controller.desktopEnvironment
-                    + " · " + root.controller.windowingSystem
-                font.pixelSize: Appearance.font.pixelSize.small
+            StyledText {
+                text: (root.controller.desktopEnvironment || "Hyprland")
+                    + " · " + (root.controller.windowingSystem || "Wayland")
+                color: root.ui.mutedInk
+                font.pixelSize: Appearance.font.pixelSize.smaller
             }
 
-            Item {
-                Layout.fillHeight: true
-            }
+            Item { Layout.fillHeight: true }
 
-            MutedText {
-                text: root.controller.distroName + " · "
-                    + root.controller.kernelVersion
+            StyledText {
+                text: root.controller.distroName + " · " + (root.controller.kernelVersion || "")
+                color: root.ui.mutedInk
+                font.pixelSize: Appearance.font.pixelSize.smaller
             }
         }
 
         GridLayout {
             columns: 2
-            columnSpacing: 11
-            rowSpacing: 11
+            columnSpacing: 10
+            rowSpacing: 10
 
             Repeater {
                 model: [
                     {
                         label: "CPU",
-                        value: Math.round(
-                            root.controller.cpuUsage * 100
-                        ) + "%",
+                        value: Math.round(root.controller.cpuUsage * 100) + "%",
                         icon: "memory"
                     },
                     {
                         label: "RAM",
-                        value: Math.round(
-                            root.controller.memoryUsedPercentage * 100
-                        ) + "%",
+                        value: Math.round(root.controller.memoryUsedPercentage * 100) + "%",
                         icon: "memory_alt"
                     },
                     {
-                        label: "Профиль",
+                        label: I18n.tr("Профиль"),
                         value: root.controller.powerProfile === "performance"
-                            ? "Макс." : root.controller.powerProfile,
+                            ? I18n.tr("Макс.") : root.controller.powerProfile,
                         icon: "speed"
                     },
                     {
-                        label: "Обновления",
+                        label: I18n.tr("Обновления"),
                         value: root.controller.availableUpdateCount > 0
                             ? String(root.controller.availableUpdateCount)
-                            : "ОК",
+                            : I18n.tr("ОК"),
                         icon: "system_update"
                     }
                 ]
@@ -139,33 +96,41 @@ Rectangle {
                 delegate: Rectangle {
                     required property var modelData
 
-                    implicitWidth: 128
-                    implicitHeight: 62
-                    radius: root.style.radiusControl
-                    color: root.style.sectionSurface
+                    implicitWidth: 124
+                    implicitHeight: 60
+                    radius: root.ui.radiusControl
+                    color: root.ui.controlSurface
+                    border.width: 1
+                    border.color: root.ui.hairline
+                    antialiasing: true
 
                     RowLayout {
                         anchors {
                             fill: parent
-                            margins: 11
+                            margins: 10
                         }
+                        spacing: 10
 
                         MaterialSymbol {
                             text: modelData.icon
                             iconSize: 20
-                            color: root.style.mutedInk
+                            color: Appearance.colors.colPrimary
                         }
 
                         ColumnLayout {
-                            spacing: 0
+                            spacing: 1
 
-                            LabelText {
+                            StyledText {
                                 text: modelData.value
+                                color: root.ui.ink
                                 font.weight: Font.DemiBold
+                                font.pixelSize: Appearance.font.pixelSize.normal
                             }
 
-                            MutedText {
+                            StyledText {
                                 text: modelData.label
+                                color: root.ui.mutedInk
+                                font.pixelSize: Appearance.font.pixelSize.smaller
                             }
                         }
                     }

@@ -26,8 +26,8 @@ GridLayout {
 
     Layout.fillWidth: true
     columns: width >= 840 ? 2 : 1
-    columnSpacing: 11
-    rowSpacing: 11
+    columnSpacing: 12
+    rowSpacing: 12
 
     MikoSurface {
         visible: root.showDevices
@@ -35,86 +35,131 @@ GridLayout {
         Layout.fillWidth: true
         Layout.columnSpan: root.columns === 2
             && (!root.attentionVisible || !root.showAttention) ? 2 : 1
-        implicitHeight: 132
 
         ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 16
-            spacing: 9
+            anchors {
+                fill: parent
+                margins: 16
+            }
+            spacing: 12
 
             RowLayout {
                 Layout.fillWidth: true
 
-                StyledText {
+                MikoSectionHeader {
                     Layout.fillWidth: true
-                    text: "Устройства"
-                    color: root.style.ink
-                    font.pixelSize: Appearance.font.pixelSize.larger
-                    font.weight: Font.DemiBold
+                    style: root.style
+                    title: I18n.tr("Устройства")
+                    subtitle: I18n.tr("Подключённые телефон и аудиовыход")
                 }
+
                 MikoButton {
                     style: root.style
                     icon: "arrow_forward"
-                    text: "Все"
+                    text: I18n.tr("Все устройства")
                     onClicked: root.navigateRequested("devices")
                 }
             }
-            RowLayout {
+
+            GridLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                columns: width >= 500 ? 2 : 1
+                columnSpacing: 10
+                rowSpacing: 10
 
-                MikoIconDisc {
-                    style: root.style
-                    icon: "smartphone"
-                    accented: root.phoneReachable
-                }
-                ColumnLayout {
+                // Phone quick info
+                MikoSurface {
                     Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    spacing: 0
-
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: root.phoneName || "Телефон"
-                        color: root.style.ink
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
-                    }
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: root.phoneReachable
-                            ? "На связи" + (root.phoneBattery >= 0
-                                ? " · " + root.phoneBattery + "%" : "")
-                            : "Сейчас не найден"
-                        color: root.style.mutedInk
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                        elide: Text.ElideRight
-                    }
-                }
-                MikoIconDisc {
                     style: root.style
-                    icon: root.audioMuted ? "volume_off" : "headphones"
-                    accented: root.audioAvailable
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    spacing: 0
+                    interactive: true
+                    softAccent: root.phoneReachable
+                    onClicked: root.navigateRequested("devices")
 
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: root.audioAvailable ? root.audioName : "Аудиовыход"
-                        color: root.style.ink
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
+                    RowLayout {
+                        anchors {
+                            fill: parent
+                            margins: 12
+                        }
+                        spacing: 10
+
+                        MikoIconDisc {
+                            style: root.style
+                            icon: "smartphone"
+                            accented: root.phoneReachable
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            spacing: 1
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.phoneName || I18n.tr("Телефон")
+                                color: root.style.ink
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                                font.weight: Font.Medium
+                                elide: Text.ElideRight
+                            }
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.phoneReachable
+                                    ? I18n.tr("На связи") + (root.phoneBattery >= 0 ? " · " + root.phoneBattery + "%" : "")
+                                    : I18n.tr("Не подключён")
+                                color: root.style.mutedInk
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                elide: Text.ElideRight
+                            }
+                        }
                     }
-                    StyledText {
-                        text: root.audioAvailable
-                            ? Math.round(root.audioVolume * 100) + "%" : "Загружается"
-                        color: root.style.mutedInk
-                        font.pixelSize: Appearance.font.pixelSize.smaller
+                }
+
+                // Audio output quick info
+                MikoSurface {
+                    Layout.fillWidth: true
+                    style: root.style
+                    interactive: true
+                    softAccent: root.audioAvailable && !root.audioMuted
+                    onClicked: root.navigateRequested("sound")
+
+                    RowLayout {
+                        anchors {
+                            fill: parent
+                            margins: 12
+                        }
+                        spacing: 10
+
+                        MikoIconDisc {
+                            style: root.style
+                            icon: root.audioMuted ? "volume_off" : "headphones"
+                            accented: root.audioAvailable && !root.audioMuted
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            spacing: 1
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.audioAvailable ? root.audioName : I18n.tr("Аудиовыход")
+                                color: root.style.ink
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                                font.weight: Font.Medium
+                                elide: Text.ElideRight
+                            }
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.audioAvailable
+                                    ? (root.audioMuted ? I18n.tr("Звук выключен") : Math.round(root.audioVolume * 100) + "%")
+                                    : I18n.tr("Не найдено")
+                                color: root.style.mutedInk
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                elide: Text.ElideRight
+                            }
+                        }
                     }
                 }
             }
@@ -124,56 +169,71 @@ GridLayout {
     MikoSurface {
         visible: root.attentionVisible && root.showAttention
         style: root.style
-        accented: true
+        softAccent: true
         Layout.fillWidth: true
-        implicitHeight: 132
 
         ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 16
-            spacing: 8
-
-            StyledText {
-                text: "Требует внимания"
-                color: root.style.ink
-                font.pixelSize: Appearance.font.pixelSize.larger
-                font.weight: Font.DemiBold
+            anchors {
+                fill: parent
+                margins: 16
             }
-            RowLayout {
+            spacing: 12
+
+            MikoSectionHeader {
+                style: root.style
+                title: I18n.tr("Требует внимания")
+                subtitle: I18n.tr("Системные предупреждения и события")
+                badgeText: I18n.tr("Внимание")
+            }
+
+            MikoSurface {
                 Layout.fillWidth: true
-                spacing: 10
+                style: root.style
+                interactive: true
+                onClicked: root.navigateRequested(root.attentionPage)
 
-                MaterialSymbol {
-                    text: root.attentionIcon
-                    iconSize: 21
-                    color: root.style.selectedSurface
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                    spacing: 0
+                RowLayout {
+                    anchors {
+                        fill: parent
+                        margins: 12
+                    }
+                    spacing: 12
 
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: root.attentionTitle
-                        color: root.style.ink
-                        font.pixelSize: Appearance.font.pixelSize.small
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
+                    MikoIconDisc {
+                        style: root.style
+                        icon: root.attentionIcon
+                        accented: true
                     }
-                    StyledText {
+
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        text: root.attentionSubtitle
-                        color: root.style.mutedInk
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                        elide: Text.ElideRight
+                        Layout.minimumWidth: 0
+                        spacing: 1
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: root.attentionTitle
+                            color: root.style.ink
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: root.attentionSubtitle
+                            color: root.style.mutedInk
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            elide: Text.ElideRight
+                        }
                     }
-                }
-                MikoButton {
-                    style: root.style
-                    icon: "arrow_forward"
-                    text: "Открыть"
-                    onClicked: root.navigateRequested(root.attentionPage)
+
+                    MikoButton {
+                        style: root.style
+                        icon: "arrow_forward"
+                        text: I18n.tr("Подробнее")
+                        onClicked: root.navigateRequested(root.attentionPage)
+                    }
                 }
             }
         }

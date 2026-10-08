@@ -5,6 +5,7 @@ MikoPageFlickable {
     id: root
 
     required property var controller
+    required property var preferences
     required property var style
 
     contentHeight: contentColumn.implicitHeight
@@ -43,6 +44,7 @@ MikoPageFlickable {
             }
             AppearanceInterfaceEditor {
                 visible: root.controller.editor === "interface"
+                preferences: root.preferences
                 style: root.style
             }
             AppearanceNotificationsEditor {

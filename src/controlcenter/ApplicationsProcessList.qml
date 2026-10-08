@@ -6,7 +6,9 @@ import qs.modules.common.widgets
 ColumnLayout {
     id: root
 
-    required property var style
+    property var style: null
+    readonly property var ui: style ? style : DefaultStyle
+
     required property var applications
     required property int selectedPid
     required property string actionMessage
@@ -14,48 +16,46 @@ ColumnLayout {
 
     signal selectionRequested(int pid)
     signal stopRequested(int pid)
+    signal refreshRequested()
 
     Layout.fillWidth: true
-    spacing: 10
+    spacing: 14
 
-    RowLayout {
-        Layout.fillWidth: true
+    MikoSectionHeader {
+        style: root.ui
+        title: I18n.tr("Активные процессы")
+        subtitle: I18n.tr("Сортировка по нагрузке · обновление каждые 3 секунды")
 
-        StyledText {
-            Layout.fillWidth: true
-            text: "Сейчас запущено"
-            color: root.style.ink
-            font.pixelSize: Appearance.font.pixelSize.larger
-            font.weight: Font.DemiBold
-        }
-        StyledText {
-            text: "Обновляется каждые 3 секунды"
-            color: root.style.mutedInk
-            font.pixelSize: Appearance.font.pixelSize.smaller
+        MikoButton {
+            style: root.ui
+            icon: "refresh"
+            text: I18n.tr("Обновить")
+            onClicked: root.refreshRequested()
         }
     }
 
     MikoSurface {
         visible: root.actionMessage !== ""
-        style: root.style
+        style: root.ui
+        softAccent: true
         Layout.fillWidth: true
         implicitHeight: 48
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 13
-            anchors.rightMargin: 13
-            spacing: 9
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            spacing: 10
 
             MaterialSymbol {
                 text: root.actionRunning ? "progress_activity" : "check_circle"
                 iconSize: 19
-                color: root.style.selectedSurface
+                color: root.ui.selectedSurface
             }
             StyledText {
                 Layout.fillWidth: true
                 text: root.actionMessage
-                color: root.style.ink
+                color: root.ui.ink
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
                 elide: Text.ElideRight
@@ -70,17 +70,17 @@ ColumnLayout {
             id: appCard
 
             required property var modelData
-            readonly property bool selected: root.selectedPid === modelData.pid
+            readonly property bool isSelected: root.selectedPid === modelData.pid
 
-            style: root.style
-            accented: selected
+            style: root.ui
+            softAccent: isSelected
             Layout.fillWidth: true
-            implicitHeight: selected ? 112 : 72
+            implicitHeight: isSelected ? 124 : 68
             clip: true
 
             Behavior on implicitHeight {
                 NumberAnimation {
-                    duration: root.style.motionNormal
+                    duration: root.ui.motionNormal
                     easing.type: Easing.OutCubic
                 }
             }
@@ -91,89 +91,88 @@ ColumnLayout {
                 anchors.rightMargin: 14
                 anchors.topMargin: 10
                 anchors.bottomMargin: 10
-                spacing: 7
+                spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 12
 
                     MikoIconDisc {
-                        style: root.style
-                        icon: "apps"
-                        accented: Number(appCard.modelData.cpu) >= 20
+                        style: root.ui
+                        icon: "terminal"
+                        accented: Number(appCard.modelData.cpu) >= 15
                     }
+
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        spacing: 0
+                        spacing: 1
 
                         StyledText {
                             Layout.fillWidth: true
                             text: appCard.modelData.command
-                            color: root.style.ink
+                            color: root.ui.ink
                             font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.Medium
+                            font.weight: Font.DemiBold
                             elide: Text.ElideRight
                         }
                         StyledText {
                             text: "PID " + appCard.modelData.pid
-                            color: root.style.mutedInk
+                            color: root.ui.mutedInk
                             font.pixelSize: Appearance.font.pixelSize.smaller
                         }
                     }
-                    ColumnLayout {
-                        spacing: 0
 
-                        StyledText {
-                            text: Number(appCard.modelData.cpu).toFixed(1) + "%"
-                            color: root.style.ink
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.DemiBold
-                        }
-                        StyledText {
-                            text: "CPU"
-                            color: root.style.mutedInk
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                        }
+                    MikoBadge {
+                        style: root.ui
+                        text: Number(appCard.modelData.cpu).toFixed(1) + "% CPU"
+                        icon: "memory"
+                        tone: Number(appCard.modelData.cpu) >= 15 ? "warning" : "neutral"
                     }
-                    ColumnLayout {
-                        spacing: 0
 
-                        StyledText {
-                            text: Number(appCard.modelData.memory).toFixed(1) + "%"
-                            color: root.style.ink
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            font.weight: Font.DemiBold
-                        }
-                        StyledText {
-                            text: "RAM"
-                            color: root.style.mutedInk
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                        }
+                    MikoBadge {
+                        style: root.ui
+                        text: Number(appCard.modelData.memory).toFixed(1) + "% RAM"
+                        icon: "storage"
+                        tone: "neutral"
                     }
+
                     MaterialSymbol {
-                        text: appCard.selected ? "expand_less" : "expand_more"
+                        text: appCard.isSelected ? "expand_less" : "expand_more"
                         iconSize: 20
-                        color: root.style.mutedInk
+                        color: root.ui.mutedInk
                     }
                 }
 
-                RowLayout {
-                    visible: appCard.selected
+                Rectangle {
+                    visible: appCard.isSelected
                     Layout.fillWidth: true
-                    Layout.leftMargin: 56
-                    spacing: 8
+                    height: 1
+                    color: root.ui.hairline
+                }
+
+                RowLayout {
+                    visible: appCard.isSelected
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    MaterialSymbol {
+                        text: "info"
+                        iconSize: 17
+                        color: root.ui.mutedInk
+                    }
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: "Сначала отправится обычный SIGTERM"
-                        color: root.style.mutedInk
+                        text: I18n.tr("Отправляет сигнал SIGTERM для штатного завершения")
+                        color: root.ui.mutedInk
                         font.pixelSize: Appearance.font.pixelSize.smaller
                     }
+
                     MikoButton {
-                        style: root.style
+                        style: root.ui
                         icon: "close"
-                        text: "Завершить"
+                        text: I18n.tr("Завершить")
                         onClicked: root.stopRequested(appCard.modelData.pid)
                     }
                 }
@@ -183,34 +182,34 @@ ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                height: 72
+                height: 68
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.selectionRequested(
-                    appCard.selected ? -1 : appCard.modelData.pid
+                    appCard.isSelected ? -1 : appCard.modelData.pid
                 )
             }
         }
     }
 
     MikoSurface {
-        visible: root.applications.length === 0
-        style: root.style
+        visible: !root.applications || root.applications.length === 0
+        style: root.ui
         Layout.fillWidth: true
-        implicitHeight: 76
+        implicitHeight: 88
 
         RowLayout {
             anchors.centerIn: parent
-            spacing: 9
+            spacing: 10
 
             MaterialSymbol {
                 text: "hourglass_empty"
-                iconSize: 20
-                color: root.style.mutedInk
+                iconSize: 22
+                color: root.ui.mutedInk
             }
             StyledText {
-                text: "Список процессов загружается…"
-                color: root.style.mutedInk
+                text: I18n.tr("Список процессов загружается…")
+                color: root.ui.mutedInk
                 font.pixelSize: Appearance.font.pixelSize.small
             }
         }

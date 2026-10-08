@@ -6,12 +6,17 @@ QtObject {
     required property var environment
 
     property var snapshots: []
-    property bool busy: false
+    readonly property bool busy: listProcess.running || createProcess.running || restoreProcess.running
     property string message: ""
     property string pendingRestore: ""
 
     function quote(value) {
         return "'" + String(value).replace(/'/g, "'\\''") + "'";
+    }
+
+    function snapshotCommand(action) {
+        return ["python3", decodeURIComponent(Qt.resolvedUrl("tools/snapshots.py").toString().replace(/^file:\/\//, "")),
+            action, environment.snapshotRoot, environment.illogicalConfig, environment.preferencesState];
     }
 
     function refresh() {
@@ -20,23 +25,9 @@ QtObject {
     }
 
     function createSnapshot() {
-        if (createProcess.running)
+        if (busy)
             return;
-        createProcess.command = ["bash", "-lc", `
-            set -eu
-            root=${quote(environment.snapshotRoot)}
-            stamp=$(date +%Y%m%d-%H%M%S)
-            work=$(mktemp -d)
-            trap 'rm -rf "$work"' EXIT
-            mkdir -p "$root" "$work/config"
-            cfg=${quote(environment.illogicalConfig)}
-            prefs=${quote(environment.preferencesState)}
-            [ -f "$cfg" ] && cp -- "$cfg" "$work/config/illogical-impulse.json"
-            [ -f "$prefs" ] && cp -- "$prefs" "$work/config/control-center.json"
-            printf 'created=%s\n' "$(date --iso-8601=seconds)" > "$work/metadata"
-            tar -C "$work" -czf "$root/$stamp.tar.gz" .
-            printf '%s\n' "$root/$stamp.tar.gz"
-        `];
+        createProcess.command = root.snapshotCommand("create");
         createProcess.running = true;
     }
 
@@ -49,27 +40,11 @@ QtObject {
     }
 
     function confirmRestore() {
-        if (pendingRestore === "" || restoreProcess.running)
+        if (pendingRestore === "" || busy)
             return;
         const archive = pendingRestore;
         pendingRestore = "";
-        restoreProcess.command = ["bash", "-lc", `
-            set -eu
-            archive=${quote(archive)}
-            work=$(mktemp -d)
-            trap 'rm -rf "$work"' EXIT
-            tar -C "$work" -xzf "$archive"
-            cfg=${quote(environment.illogicalConfig)}
-            prefs=${quote(environment.preferencesState)}
-            if [ -f "$work/config/illogical-impulse.json" ]; then
-                mkdir -p "$(dirname "$cfg")"
-                cp -- "$work/config/illogical-impulse.json" "$cfg"
-            fi
-            if [ -f "$work/config/control-center.json" ]; then
-                mkdir -p "$(dirname "$prefs")"
-                cp -- "$work/config/control-center.json" "$prefs"
-            fi
-        `];
+        restoreProcess.command = root.snapshotCommand("restore").concat([archive]);
         restoreProcess.running = true;
     }
 
@@ -81,7 +56,6 @@ QtObject {
             find "$root" -maxdepth 1 -type f -name '*.tar.gz' -printf '%T@|%p|%s\n' 2>/dev/null |
                 sort -rn | head -20
         `]
-        onRunningChanged: root.busy = running
         stdout: StdioCollector {
             onStreamFinished: {
                 root.snapshots = text.trim().split("\n")
@@ -101,20 +75,18 @@ QtObject {
 
     property Process createAction: Process {
         id: createProcess
-        onRunningChanged: root.busy = running
         onExited: (code, status) => {
-            root.message = code === 0 ? "Снимок настроек создан" : "Не удалось создать снимок";
+            root.message = code === 0 ? I18n.tr("Снимок настроек создан") : I18n.tr("Не удалось создать снимок");
             root.refresh();
         }
     }
 
     property Process restoreAction: Process {
         id: restoreProcess
-        onRunningChanged: root.busy = running
         onExited: (code, status) => {
             root.message = code === 0
-                ? "Настройки восстановлены; переоткрой центр"
-                : "Восстановление не удалось";
+                ? I18n.tr("Настройки восстановлены; переоткрой центр")
+                : I18n.tr("Восстановление не удалось");
         }
     }
 }
