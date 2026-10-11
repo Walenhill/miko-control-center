@@ -60,9 +60,23 @@
 - Interface font and behavior settings.
 - Notification and lock-screen settings.
 - Advanced parallax and application-theme controls.
+- Custom HEX accent and an optional `hyprpicker` eyedropper, using one worker for accent, palette and theme mode.
+- Off/automatic/manual transparency shared with the shell, with effective percentages and no hidden caps.
+- A genuinely transparent window and native Hyprland blur, explicitly applied and guarded against external changes.
+- Optional miko-theme API: color refresh without material resets and confirmed full presets.
+- Cookie/digital clocks: hands, date, shape and digit typography, weather and quotes.
+- Schematic widget drag-placement preview with display selection.
+- Installed-font search, previews and seven system roles plus the digital-clock font.
+- Named category-scoped profiles, local storage and JSON exchange.
+- Validated profile imports, unavailable-font reporting and single-action profile undo.
+- Visible pending/applied theme and palette state.
+- Session-scoped undo for reversible appearance changes. Externally changed
+  values are not overwritten; wallpaper selection/download is not undone.
 
 These settings target the `illogical-impulse` configuration schema. They are
 not generic GTK, KDE Plasma or GNOME settings.
+
+For profile details and extension guidance, see [Appearance](APPEARANCE.md).
 
 ## System
 
@@ -99,11 +113,14 @@ not generic GTK, KDE Plasma or GNOME settings.
 
 - `Ctrl+F` / `Ctrl+K`: focus search.
 - `Ctrl+B`: collapse or expand the sidebar.
-- `Enter`: open the first search result.
+- `Up` / `Down` in search: select a result; `Enter`: open the selected result.
 - `Alt+Left`: navigate back.
 - `Esc`: leave search, leave a nested section, then close the window.
 - `Home`, `End`, `Page Up`, `Page Down`: fast page navigation.
 - Accelerated mouse-wheel scrolling.
 - Short opacity/translation page transitions without scaling text.
 - Deep search that routes directly to a matching subsection.
+- Result categories and RU/EN aliases independent of the interface language.
+- Per-page tab, nested destination and scroll memory within the session.
+  Explicit search/IPC destinations take priority over remembered locations.
 - One operation center and compact feedback for background actions.

@@ -89,6 +89,18 @@ else
     fail "QML syntax"
 fi
 
+if command -v git >/dev/null 2>&1; then
+    for integration_patch in "${REPO_ROOT}"/integrations/miko-theme/*.patch; do
+        if git apply --numstat "${integration_patch}" >/dev/null; then
+            pass "integration patch syntax: ${integration_patch#${REPO_ROOT}/}"
+        else
+            fail "integration patch syntax: ${integration_patch#${REPO_ROOT}/}"
+        fi
+    done
+else
+    printf '[skip] git is unavailable for integration patch checks\n'
+fi
+
 if PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "${REPO_ROOT}/tests"; then
     pass "backend failure and recovery tests"
 else
@@ -98,6 +110,12 @@ fi
 if ((failures > 0)); then
     printf '\n%d check(s) failed.\n' "${failures}" >&2
     exit 1
+fi
+
+if command -v node >/dev/null 2>&1; then
+    node --test "${REPO_ROOT}/tests/test_ui_logic.cjs"
+else
+    printf '[skip] JavaScript regression tests require Node.js (development only)\n'
 fi
 
 printf '\nAll static and backend checks passed. Run scripts/smoke.sh in a Wayland session for runtime validation.\n'

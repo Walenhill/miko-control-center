@@ -64,67 +64,51 @@ Item {
         Rectangle {
             Layout.preferredWidth: root.width >= 540 ? root.controlRailWidth : 146
             implicitHeight: 42
-            radius: Appearance.rounding.full
+            radius: root.style.radiusControl
             color: root.style.controlSurface
             antialiasing: true
 
             RowLayout {
                 anchors.fill: parent
+                anchors.margins: 4
                 spacing: 0
 
-                Rectangle {
+                MikoButton {
                     Layout.preferredWidth: 44
                     Layout.fillHeight: true
-                    radius: Appearance.rounding.full
-                    color: minus.pressed ? root.style.activeSurface
-                        : minus.containsMouse ? root.style.hoverSurface : "transparent"
-                    MaterialSymbol {
-                        anchors.centerIn: parent
-                        text: "remove"
-                        iconSize: 18
-                        color: root.style.ink
-                    }
-                    MouseArea {
-                        id: minus
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.changed(Math.max(
-                            root.minimum, root.value - root.step
-                        ))
-                    }
+                    style: root.style
+                    radius: root.style.radiusSegment
+                    quiet: true
+                    icon: "remove"
+                    enabled: root.enabled && root.value > root.minimum
+                    Accessible.name: root.title + ": −"
+                    onClicked: root.changed(Math.max(root.minimum, root.value - root.step))
                 }
 
-                StyledText {
+                Rectangle {
                     Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: Math.round(root.value * 100) / 100 + root.suffix
-                    color: root.style.ink
-                    font.pixelSize: Appearance.font.pixelSize.small
-                    font.weight: Font.DemiBold
+                    Layout.fillHeight: true
+                    radius: root.style.radiusSegment - 2
+                    color: root.style.sectionSurface
+                    StyledText {
+                        anchors.centerIn: parent
+                        text: Math.round(root.value * 100) / 100 + root.suffix
+                        color: root.style.ink
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.weight: Font.Medium
+                    }
                 }
 
-                Rectangle {
+                MikoButton {
                     Layout.preferredWidth: 44
                     Layout.fillHeight: true
-                    radius: Appearance.rounding.full
-                    color: plus.pressed ? root.style.activeSurface
-                        : plus.containsMouse ? root.style.hoverSurface : "transparent"
-                    MaterialSymbol {
-                        anchors.centerIn: parent
-                        text: "add"
-                        iconSize: 18
-                        color: root.style.ink
-                    }
-                    MouseArea {
-                        id: plus
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.changed(Math.min(
-                            root.maximum, root.value + root.step
-                        ))
-                    }
+                    style: root.style
+                    radius: root.style.radiusSegment
+                    quiet: true
+                    icon: "add"
+                    enabled: root.enabled && root.value < root.maximum
+                    Accessible.name: root.title + ": +"
+                    onClicked: root.changed(Math.min(root.maximum, root.value + root.step))
                 }
             }
         }

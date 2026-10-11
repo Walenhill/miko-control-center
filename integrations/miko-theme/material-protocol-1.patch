@@ -1,0 +1,343 @@
+--- a/miko_theme/adapters/ayugram.py	2026-09-06 02:37:24.184177354 +0300
++++ b/miko_theme/adapters/ayugram.py	2026-10-08 15:52:34.840199171 +0300
+@@ -483,6 +483,9 @@
+         return True, status_desc
+ 
+     def apply(self, ctx: ApplyContext) -> tuple[bool, str]:
++        if ctx.colors_only:
++            # Palette updates must not replay geometry, behavior or window rules.
++            return self.apply_theme_bundle(ctx)
+         path = self.settings_path
+         if not path or not path.exists():
+             return False, f"missing {path}"
+--- a/miko_theme/adapters/base.py	2026-09-06 01:17:27.150212765 +0300
++++ b/miko_theme/adapters/base.py	2026-10-08 15:52:34.839199227 +0300
+@@ -14,6 +14,7 @@
+     config: Config
+     mode_cfg: dict[str, Any]
+     tokens: dict[str, Any]
++    colors_only: bool = False
+ 
+ 
+ class BaseAdapter(ABC):
+--- a/miko_theme/adapters/hyprland.py	2026-09-06 01:17:33.882199043 +0300
++++ b/miko_theme/adapters/hyprland.py	2026-10-08 15:43:13.319726887 +0300
+@@ -63,7 +63,7 @@
+         if command_exists("hyprctl"):
+             reload_result = run_command(["hyprctl", "reload"])
+             if reload_result.returncode != 0:
+-                return True, "overrides updated; hyprctl reload failed"
++                return False, "overrides updated; hyprctl reload failed"
+             return True, "updated and reloaded"
+ 
+         return True, "updated (hyprctl not found)"
+--- a/miko_theme/adapters/steam.py	2026-09-06 02:21:45.493204794 +0300
++++ b/miko_theme/adapters/steam.py	2026-10-08 15:52:34.840199171 +0300
+@@ -233,6 +233,8 @@
+ 
+         # 3. Verify patch state, repatch if Steam updated
+         if not self.is_patched():
++            if ctx.colors_only:
++                return False, "colors updated; Steam skin patch missing (use an explicit preset to repair)"
+             ok, msg = self.repatch()
+             if not ok:
+                 return False, f"repatch needed: {msg}"
+--- a/miko_theme/backup.py	2026-09-06 01:17:25.162216825 +0300
++++ b/miko_theme/backup.py	2026-10-08 15:43:13.319726887 +0300
+@@ -59,6 +59,7 @@
+         "ayugram_settings": get_file_hash(cfg.paths.get("ayugramSettings")),
+         "ayugram_theme": get_file_hash(cfg.paths.get("ayugramTheme")),
+         "hypr_miko": get_file_hash(cfg.paths.get("hyprMikoRules")),
++        "hypr_overrides": get_file_hash(cfg.paths.get("hyprShellOverrides")),
+     }
+ 
+ 
+@@ -86,7 +87,7 @@
+             except Exception:
+                 pass
+ 
+-    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
++    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S%f")
+     dest = backups_dir / f"{stamp}-{reason}"
+     dest.mkdir(parents=True, exist_ok=False)
+ 
+@@ -97,6 +98,7 @@
+         ("ayugramSettings", "ayugram-settings.json"),
+         ("ayugramTheme", "ayugram-miko.tdesktop-theme"),
+         ("hyprMikoRules", "hypr-miko-theme-rules.lua"),
++        ("hyprShellOverrides", "hypr-shell-overrides.lua"),
+     ]
+ 
+     for key, filename in copy_targets:
+@@ -144,6 +146,7 @@
+         ("ayugram-settings.json", cfg.paths.get("ayugramSettings")),
+         ("ayugram-miko.tdesktop-theme", cfg.paths.get("ayugramTheme")),
+         ("hypr-miko-theme-rules.lua", cfg.paths.get("hyprMikoRules")),
++        ("hypr-shell-overrides.lua", cfg.paths.get("hyprShellOverrides")),
+     ]
+ 
+     restored_items = []
+--- a/miko_theme/cli.py	2026-09-06 02:22:18.239112063 +0300
++++ b/miko_theme/cli.py	2026-10-08 15:52:34.839199227 +0300
+@@ -13,13 +13,16 @@
+ from miko_theme.backup import create_backup, latest_backup, rollback
+ from miko_theme.config import Config, CONFIG_FILE, list_modes, load_mode
+ from miko_theme.tokens import build_tokens
+-from miko_theme.utils import command_exists, notify
++from miko_theme.utils import command_exists, notify, run_command
++from miko_theme.integration import execution_lock, inspect_state, apply_blur
+ 
+ 
+-def apply_mode(
++def _apply_mode(
+     cfg: Config | None = None,
+     create_backup_flag: bool = True,
+     reason: str = "apply",
++    apply_materials: bool = False,
++    quiet: bool = False,
+ ) -> int:
+     """Core apply function: generates tokens and invokes all enabled adapters."""
+     if cfg is None:
+@@ -35,12 +38,16 @@
+         create_backup(cfg, reason=reason)
+ 
+     tokens, _ = build_tokens(cfg, mode_cfg)
+-    ctx = ApplyContext(config=cfg, mode_cfg=mode_cfg, tokens=tokens)
++    ctx = ApplyContext(config=cfg, mode_cfg=mode_cfg, tokens=tokens, colors_only=not apply_materials)
+ 
+     adapters = get_adapters(cfg)
+     results: list[tuple[str, bool, str]] = []
+ 
+     for name, adapter in adapters.items():
++        # A palette refresh must never replay shell/compositor preset values.
++        # Only the explicit `mode` command owns preset application.
++        if not apply_materials and name in {"illogical", "hyprland"}:
++            continue
+         if not cfg.enabled_adapters.get(name, False):
+             continue
+         try:
+@@ -52,7 +59,10 @@
+     all_ok = all(success for _, success, _ in results)
+     summary = ", ".join(f"{name}: {msg}" for name, _, msg in results) or "no adapters enabled"
+ 
+-    notify("miko-theme", f"{mode_cfg['name']}: {summary}", enabled=cfg.notify)
++    cfg.raw["lastApply"] = {"kind": "preset" if apply_materials else "colors", "ok": all_ok,
++        "results": [{"adapter": name, "ok": ok, "message": msg} for name, ok, msg in results]}
++    cfg.save()
++    notify("miko-theme", f"{mode_cfg['name']}: {summary}", enabled=cfg.notify and not quiet)
+ 
+     tokens_path = cfg.paths.get("tokens")
+     print(f"mode: {mode_cfg['name']}")
+@@ -64,6 +74,11 @@
+     return 0 if all_ok else 1
+ 
+ 
++def apply_mode(cfg=None, create_backup_flag=True, reason="apply", apply_materials=False, quiet=False):
++    with execution_lock():
++        return _apply_mode(cfg, create_backup_flag, reason, apply_materials, quiet)
++
++
+ def cmd_status() -> int:
+     cfg = Config.load()
+     colors_path = cfg.paths.get("colors")
+@@ -73,6 +88,8 @@
+     backups_dir = cfg.paths.get("backups")
+ 
+     print(f"activeMode: {cfg.active_mode}")
++    if cfg.raw.get("lastApply"):
++        print("lastApply: " + json.dumps(cfg.raw["lastApply"], ensure_ascii=False))
+     print(f"availableModes: {', '.join(list_modes())}")
+     print(f"colors: {colors_path} ({'ok' if colors_path and colors_path.exists() else 'missing'})")
+     print(f"tokens: {tokens} ({'ok' if tokens and tokens.exists() else 'missing'})")
+@@ -103,10 +120,12 @@
+         print(f"Error: {exc}", file=sys.stderr)
+         return 1
+ 
+-    create_backup(cfg, reason=f"mode-{mode_name}")
+-    cfg.active_mode = mode_name
+-    cfg.save()
+-    return apply_mode(cfg, create_backup_flag=False, reason=f"mode-{mode_name}")
++    with execution_lock():
++        cfg = Config.load()
++        create_backup(cfg, reason=f"mode-{mode_name}")
++        cfg.active_mode = mode_name
++        cfg.save()
++        return _apply_mode(cfg, create_backup_flag=False, reason=f"mode-{mode_name}", apply_materials=True)
+ 
+ 
+ def cmd_cycle() -> int:
+@@ -121,13 +140,17 @@
+ 
+ 
+ def cmd_rollback() -> int:
+-    cfg = Config.load()
+-    success, msg = rollback(cfg)
+-    if not success:
+-        print(f"Rollback failed: {msg}", file=sys.stderr)
+-        return 1
+-    print(msg)
+-    return apply_mode(cfg, create_backup_flag=False, reason="rollback")
++    with execution_lock():
++        cfg = Config.load()
++        success, msg = rollback(cfg)
++        if not success:
++            print(f"Rollback failed: {msg}", file=sys.stderr)
++            return 1
++        print(msg)
++        if command_exists("hyprctl") and run_command(["hyprctl", "reload"]).returncode != 0:
++            print("Files restored, but compositor reload failed", file=sys.stderr)
++            return 1
++        return _apply_mode(Config.load(), create_backup_flag=False, reason="rollback")
+ 
+ 
+ def cmd_preview(target: str) -> int:
+@@ -202,11 +225,19 @@
+     sub = parser.add_subparsers(dest="command")
+ 
+     sub.add_parser("status", help="Show current status and paths")
+-    sub.add_parser("apply", help="Apply current mode styling across all enabled adapters")
++    sub.add_parser("apply", help="Refresh application colors without resetting shell material settings")
++    sync_parser = sub.add_parser("sync", help="Synchronize application colors; preserve shell transparency and compositor settings")
++    sync_parser.add_argument("--quiet", action="store_true")
++    sub.add_parser("inspect", help="Read-only JSON integration state (protocol 1)")
++    blur_parser = sub.add_parser("blur", help="Explicitly set persistent compositor blur, then verify live values")
++    blur_parser.add_argument("--enabled", required=True, choices=["true", "false"])
++    blur_parser.add_argument("--size", type=int, required=True, choices=range(1, 17))
++    blur_parser.add_argument("--passes", type=int, required=True, choices=range(1, 5))
++    blur_parser.add_argument("--expect", type=json.loads, help="Guard against a stale client snapshot")
+     sub.add_parser("cycle", help="Cycle through off -> calm -> glass -> neon")
+ 
+     mode_parser = sub.add_parser("mode", help="Switch to a specific mode")
+-    mode_parser.add_argument("name", choices=["off", "calm", "glass", "neon"], help="Mode name to switch to")
++    mode_parser.add_argument("name", choices=list_modes(), help="Mode name to switch to")
+ 
+     preview_parser = sub.add_parser("preview", help="Preview computed tokens and styles")
+     preview_parser.add_argument(
+@@ -226,6 +257,13 @@
+         return cmd_status()
+     if args.command == "apply":
+         return apply_mode(create_backup_flag=True, reason="apply")
++    if args.command == "sync":
++        return apply_mode(create_backup_flag=False, reason="colors", quiet=args.quiet)
++    if args.command == "inspect":
++        print(json.dumps(inspect_state(Config.load(read_only=True)), ensure_ascii=False))
++        return 0
++    if args.command == "blur":
++        return apply_blur(args.enabled == "true", args.size, args.passes, args.expect)
+     if args.command == "cycle":
+         return cmd_cycle()
+     if args.command == "mode":
+--- a/miko_theme/config.py	2026-09-06 02:21:53.017183250 +0300
++++ b/miko_theme/config.py	2026-10-08 15:36:06.326076338 +0300
+@@ -54,9 +54,10 @@
+     raw: dict[str, Any] = field(default_factory=dict)
+ 
+     @classmethod
+-    def load(cls, config_path: Path | str = CONFIG_FILE) -> Config:
++    def load(cls, config_path: Path | str = CONFIG_FILE, read_only: bool = False) -> Config:
+         """Load configuration from JSON, ensuring defaults are present."""
+-        BASE_DIR.mkdir(parents=True, exist_ok=True)
++        if not read_only:
++            BASE_DIR.mkdir(parents=True, exist_ok=True)
+         raw = read_json(config_path, DEFAULT_CONFIG)
+ 
+         changed = False
+@@ -71,7 +72,7 @@
+                 raw_paths[k] = v
+                 changed = True
+ 
+-        if changed:
++        if changed and not read_only:
+             write_json(config_path, raw)
+ 
+         resolved_paths = {k: Path(v) for k, v in raw_paths.items()}
+@@ -86,7 +87,7 @@
+ 
+     def save(self, config_path: Path | str = CONFIG_FILE) -> bool:
+         """Persist current configuration to disk."""
+-        data = {
++        data = {**self.raw,
+             "activeMode": self.active_mode,
+             "enabledAdapters": self.enabled_adapters,
+             "paths": {k: str(v) for k, v in self.paths.items()},
+--- a/miko_theme/integration.py	1970-01-01 03:00:00.000000000 +0300
++++ b/miko_theme/integration.py	2026-10-08 15:43:13.319726887 +0300
+@@ -0,0 +1,78 @@
++"""Versioned, read-only inspection and serialized material operations for clients."""
++from __future__ import annotations
++
++from contextlib import contextmanager
++import fcntl
++import json
++import re
++import subprocess
++
++from miko_theme.config import BASE_DIR, Config, list_modes, load_mode
++from miko_theme.adapters.base import ApplyContext
++from miko_theme.adapters.hyprland import HyprlandAdapter
++from miko_theme.backup import create_backup, latest_backup
++from miko_theme.utils import read_json, command_exists
++
++
++@contextmanager
++def execution_lock():
++    BASE_DIR.mkdir(parents=True, exist_ok=True)
++    with (BASE_DIR / "apply.lock").open("a") as handle:
++        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
++        yield
++
++
++def live_blur() -> dict:
++    result = {}
++    if not command_exists("hyprctl"):
++        return result
++    for key in ("enabled", "size", "passes"):
++        try:
++            proc = subprocess.run(["hyprctl", "getoption", "decoration:blur:" + key, "-j"], capture_output=True, text=True, timeout=3)
++            value = json.loads(proc.stdout) if proc.returncode == 0 else {}
++            current = value.get("bool") if key == "enabled" else value.get("int")
++            if current is not None:
++                result[key] = bool(current) if key == "enabled" else int(current)
++        except (OSError, ValueError, subprocess.TimeoutExpired):
++            pass
++    return result
++
++
++def inspect_state(cfg: Config) -> dict:
++    path = cfg.paths.get("illogicalConfig")
++    current = read_json(path, {}) if path else {}
++    modes = []
++    for name in list_modes():
++        if not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}", name):
++            continue
++        mode = load_mode(name)
++        modes.append({"id": name, "name": mode.get("name", name), "illogical": mode.get("illogical", {}), "blur": mode.get("hyprland", {}).get("set", {})})
++    blur = live_blur()
++    backup = latest_backup(cfg.paths["backups"]) if cfg.paths.get("backups") else None
++    return {"protocol": 1, "activeMode": cfg.active_mode, "modes": modes,
++        "enabledAdapters": cfg.enabled_adapters,
++        "transparency": current.get("appearance", {}).get("transparency", {}),
++        "blur": blur, "lastApply": cfg.raw.get("lastApply", {}),
++        "canRollback": bool(backup and (backup / "hypr-shell-overrides.lua").exists()),
++        "blurSupported": HyprlandAdapter(cfg).is_available() and len(blur) == 3}
++
++
++def apply_blur(enabled: bool, size: int, passes: int, expect: dict | None = None) -> int:
++    if not 1 <= size <= 16 or not 1 <= passes <= 4:
++        raise ValueError("Blur size must be 1..16 and passes 1..4")
++    with execution_lock():
++        cfg = Config.load()
++        if expect is not None and live_blur() != expect:
++            print("Blur changed externally. Refresh before applying.")
++            return 1
++        create_backup(cfg, reason="blur")
++        expected = {"enabled": enabled, "size": size, "passes": passes}
++        sets = {"decoration:blur:" + key: str(value).lower() for key, value in expected.items()}
++        adapter = HyprlandAdapter(cfg)
++        success, message = adapter.apply(ApplyContext(cfg, {"hyprland": {"set": sets}}, {}))
++        if success and live_blur() != expected:
++            subprocess.run(["hyprctl", "reload"], capture_output=True, timeout=10)
++            if live_blur() != expected:
++                success, message = False, "Blur configuration saved, but live compositor values differ"
++        print(message)
++        return 0 if success else 1

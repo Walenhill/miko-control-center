@@ -13,7 +13,7 @@ Rectangle {
     opacity: operations.snackbarVisible ? 1 : 0
     implicitWidth: Math.min(620, content.implicitWidth + 34)
     implicitHeight: Math.max(58, content.implicitHeight + 18)
-    radius: Appearance.rounding.full
+    radius: style.radiusSection
     color: style.controlSurface
     border.width: 1
     border.color: style.strongHairline

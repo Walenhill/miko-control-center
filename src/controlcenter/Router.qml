@@ -17,32 +17,30 @@ QtObject {
         || (currentPageId === "appearance" && appearanceEditor !== "")
         || (currentPageId === "services" && selectedComponentId !== "")
 
-    function openId(pageId) {
+    function openId(pageId, saved) {
         const requestedPageId = pageId === undefined || pageId === null
             ? "" : String(pageId).trim();
         const nextPageId = requestedPageId !== ""
             ? requestedPageId : registry.defaultPageId;
-        currentPageId = nextPageId;
-        // Entering a sidebar destination always means its root. Dedicated IPC
-        // methods set a deeper destination immediately afterwards when needed.
-        if (nextPageId === "network")
-            networkSection = "overview";
-        appearanceEditor = "";
-        selectedComponentId = "";
+        networkSection = nextPageId === "network" && saved
+            ? saved.networkSection || "overview" : "overview";
+        appearanceEditor = nextPageId === "appearance" && saved
+            ? saved.appearanceEditor || "" : "";
+        selectedComponentId = nextPageId === "services" && saved
+            ? saved.selectedComponentId || "" : "";
         focusTarget = "";
+        currentPageId = nextPageId;
         return nextPageId;
     }
 
     function openTarget(target) {
         const pageId = (target && target.pageId) ? target.pageId : registry.defaultPageId;
-        openId(pageId);
+        // Install the explicit destination before creating its page.
+        networkSection = pageId === "network" && target.section ? target.section : "overview";
+        appearanceEditor = pageId === "appearance" && target.section ? target.section : "";
+        selectedComponentId = pageId === "services" && target.componentId ? target.componentId : "";
         focusTarget = (target && target.target) ? target.target : ((target && target.section) ? target.section : "");
-        if (pageId === "network" && target && target.section)
-            networkSection = target.section;
-        if (pageId === "appearance" && target && target.section)
-            appearanceEditor = target.section;
-        if (pageId === "services" && target && target.componentId)
-            selectedComponentId = target.componentId;
+        currentPageId = pageId;
         return pageId;
     }
 

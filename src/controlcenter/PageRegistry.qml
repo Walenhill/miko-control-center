@@ -29,6 +29,10 @@ QtObject {
         { title: I18n.tr("Телефон"), subtitle: I18n.tr("KDE Connect, файлы и буфер"), icon: "smartphone", pageId: "devices", target: "phone", keywords: I18n.tr("android clipboard ping ring отправить") },
         { title: I18n.tr("USB-устройства"), subtitle: I18n.tr("Подключённое оборудование"), icon: "usb", pageId: "devices", target: "usb", keywords: I18n.tr("гарнитура ресивер lsusb") },
         { title: I18n.tr("Обои и цвета"), subtitle: I18n.tr("Material You и палитра"), icon: "wallpaper", pageId: "appearance", section: "wallpaper", keywords: I18n.tr("matugen тема светлая темная прозрачность") },
+        { title: I18n.tr("Прозрачность и блюр"), subtitle: "Hyprland · miko-theme", icon: "blur_on", pageId: "appearance", section: "materials", keywords: "opacity alpha blur glass calm neon" },
+        { title: I18n.tr("Виджеты рабочего стола"), subtitle: I18n.tr("Часы, погода и расположение"), icon: "schedule", pageId: "appearance", section: "widgets", keywords: "clock weather cookie digital quote widgets" },
+        { title: I18n.tr("Шрифты и типографика"), subtitle: I18n.tr("Роли шрифтов и предпросмотр"), icon: "text_fields", pageId: "appearance", section: "fonts", keywords: "font typography preview" },
+        { title: I18n.tr("Профили оформления"), subtitle: I18n.tr("Сохранение и перенос внешнего вида"), icon: "palette", pageId: "appearance", section: "profiles", keywords: "appearance profiles json import export" },
         { title: I18n.tr("Панель и экран"), subtitle: I18n.tr("Положение, форма и элементы"), icon: "dock_to_bottom", pageId: "appearance", section: "bar", keywords: I18n.tr("dock panel workspaces автоскрытие") },
         { title: I18n.tr("Интерфейс"), subtitle: I18n.tr("Шрифт, overview и поведение"), icon: "widgets", pageId: "appearance", section: "interface", keywords: I18n.tr("font osd масштаб") },
         { title: I18n.tr("Уведомления"), subtitle: I18n.tr("Время и расположение карточек"), icon: "notifications", pageId: "appearance", section: "notifications", keywords: "popup timeout monitor" },
@@ -48,6 +52,18 @@ QtObject {
         { title: I18n.tr("Не беспокоить"), subtitle: I18n.tr("Уведомления и исключения"), icon: "do_not_disturb_on", pageId: "applications", target: "notifications", keywords: "timeout popup silent" },
         { title: I18n.tr("Микрофон и экран"), subtitle: I18n.tr("Активность приложений"), icon: "privacy_tip", pageId: "applications", target: "privacy", keywords: "capture portal privacy" }
     ]
+
+    function tabForTarget(pageId, target) {
+        const tabs = {
+            sound: {master: "devices", mixer: "mixer", scenes: "mixer", tools: "effects", effects: "effects", balance: "effects"},
+            displays: {topology: "topology", modes: "modes", comfort: "comfort"},
+            devices: {phone: "phone", connections: "connections", bluetooth: "connections", usb: "usb"},
+            system: {performance: "performance", watch: "performance", storage: "storage", snapshots: "storage", updates: "updates", telemetry: "updates"},
+            services: {diagnostics: "diagnostics", all: "all", integrations: "components"},
+            applications: {processes: "processes", autostart: "autostart", notifications: "notifications", privacy: "notifications"}
+        };
+        return tabs[pageId] ? tabs[pageId][target] || "" : "";
+    }
 
     function indexOf(pageId) {
         return pages.findIndex(item => item.id === pageId);

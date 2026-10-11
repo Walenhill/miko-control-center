@@ -9,12 +9,13 @@ ColumnLayout {
 
     required property var style
     required property var preferences
+    required property var controller
 
     Layout.fillWidth: true
     spacing: 16
 
     // Language Card
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -77,7 +78,7 @@ ColumnLayout {
     }
 
     // Dock Card
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -99,17 +100,17 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0
 
-                MikoToggleRow { style: root.style; title: I18n.tr("Включить Dock"); icon: "dock_to_bottom"; checked: Config.options.dock.enable; onToggled: checked => Config.options.dock.enable = checked }
-                MikoToggleRow { style: root.style; title: I18n.tr("Показывать при наведении"); icon: "ads_click"; checked: Config.options.dock.hoverToReveal; available: Config.options.dock.enable; onToggled: checked => Config.options.dock.hoverToReveal = checked }
-                MikoToggleRow { style: root.style; title: I18n.tr("Закреплять при запуске"); icon: "keep"; checked: Config.options.dock.pinnedOnStartup; available: Config.options.dock.enable; onToggled: checked => Config.options.dock.pinnedOnStartup = checked }
-                MikoToggleRow { style: root.style; title: I18n.tr("Монохромные иконки"); icon: "filter_b_and_w"; checked: Config.options.dock.monochromeIcons; available: Config.options.dock.enable; onToggled: checked => Config.options.dock.monochromeIcons = checked }
-                MikoStepperRow { style: root.style; title: I18n.tr("Высота Dock"); icon: "height"; value: Config.options.dock.height; minimum: 36; maximum: 100; step: 2; suffix: " px"; onChanged: value => Config.options.dock.height = value }
+                MikoToggleRow { style: root.style; title: I18n.tr("Включить Dock"); icon: "dock_to_bottom"; checked: Config.options.dock.enable; onToggled: checked => AppearanceChanges.setOption("dock.enable", checked, title) }
+                MikoToggleRow { style: root.style; title: I18n.tr("Показывать при наведении"); icon: "ads_click"; checked: Config.options.dock.hoverToReveal; available: Config.options.dock.enable; onToggled: checked => AppearanceChanges.setOption("dock.hoverToReveal", checked, title) }
+                MikoToggleRow { style: root.style; title: I18n.tr("Закреплять при запуске"); icon: "keep"; checked: Config.options.dock.pinnedOnStartup; available: Config.options.dock.enable; onToggled: checked => AppearanceChanges.setOption("dock.pinnedOnStartup", checked, title) }
+                MikoToggleRow { style: root.style; title: I18n.tr("Монохромные иконки"); icon: "filter_b_and_w"; checked: Config.options.dock.monochromeIcons; available: Config.options.dock.enable; onToggled: checked => AppearanceChanges.setOption("dock.monochromeIcons", checked, title) }
+                MikoStepperRow { style: root.style; title: I18n.tr("Высота Dock"); icon: "height"; value: Config.options.dock.height; minimum: 36; maximum: 100; step: 2; suffix: " px"; onChanged: value => AppearanceChanges.setOption("dock.height", value, title) }
             }
         }
     }
 
     // Overview Card
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -131,17 +132,17 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0
 
-                MikoToggleRow { style: root.style; title: I18n.tr("Включить обзор"); icon: "grid_view"; checked: Config.options.overview.enable; onToggled: checked => Config.options.overview.enable = checked }
-                MikoToggleRow { style: root.style; title: I18n.tr("Центрировать иконки"); icon: "center_focus_strong"; checked: Config.options.overview.centerIcons; available: Config.options.overview.enable; onToggled: checked => Config.options.overview.centerIcons = checked }
-                MikoStepperRow { style: root.style; title: I18n.tr("Строки"); icon: "table_rows"; value: Config.options.overview.rows; minimum: 1; maximum: 6; onChanged: value => Config.options.overview.rows = value }
-                MikoStepperRow { style: root.style; title: I18n.tr("Колонки"); icon: "view_column"; value: Config.options.overview.columns; minimum: 2; maximum: 12; onChanged: value => Config.options.overview.columns = value }
-                MikoStepperRow { style: root.style; title: I18n.tr("Масштаб"); icon: "zoom_out_map"; value: Math.round(Config.options.overview.scale * 100); minimum: 8; maximum: 30; suffix: "%"; onChanged: value => Config.options.overview.scale = value / 100 }
+                MikoToggleRow { style: root.style; title: I18n.tr("Включить обзор"); icon: "grid_view"; checked: Config.options.overview.enable; onToggled: checked => AppearanceChanges.setOption("overview.enable", checked, title) }
+                MikoToggleRow { style: root.style; title: I18n.tr("Центрировать иконки"); icon: "center_focus_strong"; checked: Config.options.overview.centerIcons; available: Config.options.overview.enable; onToggled: checked => AppearanceChanges.setOption("overview.centerIcons", checked, title) }
+                MikoStepperRow { style: root.style; title: I18n.tr("Строки"); icon: "table_rows"; value: Config.options.overview.rows; minimum: 1; maximum: 6; onChanged: value => AppearanceChanges.setOption("overview.rows", value, title) }
+                MikoStepperRow { style: root.style; title: I18n.tr("Колонки"); icon: "view_column"; value: Config.options.overview.columns; minimum: 2; maximum: 12; onChanged: value => AppearanceChanges.setOption("overview.columns", value, title) }
+                MikoStepperRow { style: root.style; title: I18n.tr("Масштаб"); icon: "zoom_out_map"; value: Math.round(Config.options.overview.scale * 100); minimum: 8; maximum: 30; suffix: "%"; onChanged: value => AppearanceChanges.setOption("overview.scale", value / 100, title) }
             }
         }
     }
 
     // Typography & OSD Card
-    MikoSurface {
+    MikoSettingsGroup {
         Layout.fillWidth: true
         style: root.style
 
@@ -169,21 +170,9 @@ ColumnLayout {
                     font.weight: Font.Medium
                 }
 
-                TextField {
-                    Layout.fillWidth: true
-                    text: Config.options.appearance.fonts.main
-                    color: root.style.ink
-                    font.family: Appearance.font.family.main
-                    font.pixelSize: Appearance.font.pixelSize.normal
-                    padding: 10
-                    background: Rectangle {
-                        radius: root.style.radiusControl
-                        color: root.style.controlSurface
-                        border.width: 1
-                        border.color: root.style.hairline
-                    }
-                    onEditingFinished:
-                        Config.options.appearance.fonts.main = text.trim()
+                MikoButton {
+                    style: root.style; text: Config.options.appearance.fonts.main; icon: "text_fields"
+                    onClicked: root.controller.openEditor("fonts")
                 }
             }
 
@@ -196,7 +185,7 @@ ColumnLayout {
                 maximum: 5000
                 step: 100
                 suffix: I18n.tr(" мс")
-                onChanged: value => Config.options.osd.timeout = value
+                onChanged: value => AppearanceChanges.setOption("osd.timeout", value, title)
             }
         }
     }

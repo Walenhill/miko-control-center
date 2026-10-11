@@ -1,0 +1,15 @@
+--- a/scripts/colors/switchwall.sh
++++ b/scripts/colors/switchwall.sh
+@@ -58,6 +58,11 @@
+     handle_kde_material_you_colors &
+     "$SCRIPT_DIR/code/material-code-set-color.sh" &
+     if command -v miko-theme >/dev/null 2>&1; then
+-        miko-theme apply >/tmp/miko-theme-switchwall.log 2>&1 &
++        # Refresh colors only, and wait: a preset must never overwrite manual
++        # transparency/blur after the color generator has reported completion.
++        mkdir -p "$STATE_DIR/user/generated"
++        if ! miko-theme sync --quiet >"$STATE_DIR/user/generated/miko-theme-sync.log" 2>&1; then
++            echo "[switchwall] Application color sync incomplete; see miko-theme inspect" >&2
++        fi
+     fi
+ }
