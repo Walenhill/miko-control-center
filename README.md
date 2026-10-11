@@ -4,16 +4,16 @@
 
 Current release: **Cadence · v1.0.0** — [release notes / upgrade guide](docs/RELEASE-1.0.0.md).
 
-Development update: **Silverstar 1.1** — [what changed / limitations](docs/UPDATE-1.1.md).
-Available on `codex/silverstar-convenience-1.1`; not a tagged release yet.
+Development preview: **Silverstar 1.1** — [changes and limitations](https://github.com/Walenhill/miko-control-center/blob/codex/silverstar-convenience-1.1/docs/UPDATE-1.1.md).
+The new interface shown below lives on [the development branch](https://github.com/Walenhill/miko-control-center/tree/codex/silverstar-convenience-1.1), not in the Cadence release or `main` application code.
 
 A desktop-first control center for a customized Linux system built with
 [Quickshell](https://quickshell.org/), Qt Quick and the
 `illogical-impulse` (`ii`) shell runtime.
 
-Miko Control Center brings everyday system controls, diagnostics and personal
-integrations into one consistent interface without pretending that every Linux
-machine is identical.
+System controls, diagnostics and desktop customization in one place. Adaptive
+Material colors, Russian/English UI and optional integrations make it a
+personal desktop tool, not a promise that every Linux machine is identical.
 
 > [!WARNING]
 > **Experimental project.** This is a personal system component published for
@@ -21,33 +21,21 @@ machine is identical.
 > Arch/Hyprland setup, but APIs, layout and installation details may change.
 > It is not a distribution-independent replacement for every settings app.
 
-![Miko Control Center overview](docs/assets/screenshots/overview-purple.png)
+![Silverstar 1.1 desktop overview](docs/assets/screenshots/current-overview.png)
 
 ## Interface
 
-The interface follows the wallpaper-derived Material palette rather than
-shipping one fixed accent color.
+One continuous window surface, soft controls, compact navigation and gentle
+scroll-edge fading. Colors follow the shell's Material palette rather than one
+fixed project accent. The navigation can collapse when space is limited.
 
-| Alternate palette | Appearance editor |
-| --- | --- |
-| ![Pink overview palette](docs/assets/screenshots/overview-pink.png) | ![Purple appearance editor](docs/assets/screenshots/appearance-purple.png) |
+**Work in progress — screenshots from the author's desktop, 2026-10-11.**
+They show the current development interface with real transparency and native
+compositor blur. The design is still being refined; the shell version, theme
+and available integrations affect how it looks and behaves. The screenshots
+use Russian; the application also supports English.
 
-<details>
-<summary><strong>More screenshots</strong></summary>
-
-| Network and ports | Phone and devices |
-| --- | --- |
-| ![Network port inspector](docs/assets/screenshots/network-ports.png) | ![KDE Connect phone integration](docs/assets/screenshots/devices-phone.png) |
-
-| Display workspace | System health |
-| --- | --- |
-| ![Display topology and modes](docs/assets/screenshots/displays.png) | ![System resources and Miko Watch](docs/assets/screenshots/system-health.png) |
-
-| Services and integrations |
-| --- |
-| ![Services and integrations](docs/assets/screenshots/services.png) |
-
-</details>
+![Current appearance page with adaptive colors and translucent surfaces](docs/assets/screenshots/current-appearance.png)
 
 ## Highlights
 
@@ -66,6 +54,19 @@ shipping one fixed accent color.
 - Keyboard navigation, accelerated scrolling and restrained desktop motion.
 - Customizable overview, deep search, operation center and settings snapshots.
 - Russian and English interface with live language switching.
+
+### In the Silverstar 1.1 preview
+
+- Per-page tab/editor/scroll memory and keyboard search with bilingual aliases.
+- Queued theme/accent generation, requested/applied status and guarded undo.
+- Custom accents, font roles, desktop widget controls and portable JSON profiles.
+- Separate Off/Auto/Manual transparency and explicit native blur controls.
+- Optional miko-theme color refresh that preserves materials; full presets
+  remain a separate confirmed action.
+
+See the [appearance guide](https://github.com/Walenhill/miko-control-center/blob/codex/silverstar-convenience-1.1/docs/en/APPEARANCE.md).
+Profiles are not full system backups; blur is global to Hyprland. The center's
+installer does not patch external projects automatically.
 
 The complete capability matrix is in
 [docs/en/FEATURES.md](docs/en/FEATURES.md).
@@ -93,12 +94,19 @@ Common launch and integration problems are covered in
 
 ## Installation
 
-Clone the repository and run the preflight check:
+For the latest tagged release:
 
 ```bash
-git clone https://github.com/Walenhill/miko-control-center.git
+git clone --branch v1.0.0 https://github.com/Walenhill/miko-control-center.git
 cd miko-control-center
 ./scripts/doctor.sh
+```
+
+To try the interface shown in the screenshots, clone the development branch
+instead. It is not a tagged release:
+
+```bash
+git clone --branch codex/silverstar-convenience-1.1 https://github.com/Walenhill/miko-control-center.git
 ```
 
 Preview the files that would be installed:
@@ -171,6 +179,11 @@ qs -p "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/ii/control-center.qml"
 ```
 
 Do not restart the primary shell just to validate this application.
+
+Validate a compatible checkout with `bash scripts/check.sh` and, inside a
+Wayland session, `bash scripts/smoke.sh`. The development branch also includes
+`scripts/render-ui.sh` for isolated native UI captures without activating
+system-changing controls.
 
 Architecture and extension rules are documented in
 [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md).

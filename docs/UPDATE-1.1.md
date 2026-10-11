@@ -52,7 +52,7 @@ visible pages; it is alpha fading, not another full-page blur.
 
 See [appearance usage](en/APPEARANCE.md), [features](en/FEATURES.md),
 [architecture](en/ARCHITECTURE.md) and [limitations](en/LIMITATIONS.md).
-README screenshots show an older interface revision.
+README screenshots show this development interface, not the Cadence v1.0.0 release.
 
 ### Checks and trying this branch
 
@@ -129,7 +129,7 @@ Cadence v1.0.0. Это **ещё не релиз с тегом**: `VERSION` со�
 
 Подробнее: [оформление](ru/APPEARANCE.md), [возможности](ru/FEATURES.md),
 [архитектура](ru/ARCHITECTURE.md), [ограничения](ru/LIMITATIONS.md).
-Скриншоты README показывают более ранний интерфейс.
+Скриншоты README показывают эту ветку разработки, а не релиз Cadence v1.0.0.
 
 ### Проверки и установка ветки
 
