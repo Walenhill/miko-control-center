@@ -29,10 +29,19 @@ QtObject {
                     visible: true
                 });
                 if (!root.app) { Qt.exit(1); return; }
-                root.app.openDestination({pageId: Quickshell.env("MIKO_RENDER_PAGE") || "appearance", section: Quickshell.env("MIKO_RENDER_EDITOR") || "materials"});
+                const editor = Quickshell.env("MIKO_RENDER_EDITOR");
+                root.app.openDestination({pageId: Quickshell.env("MIKO_RENDER_PAGE") || "appearance", section: editor === "hub" ? "" : editor || "materials"});
                 return;
             }
             if (root.phase === 0) {
+                // A compositor's initial-size rule may override createObject.
+                // Resize only this isolated fixture once the window is mapped.
+                root.app.width = Number(Quickshell.env("MIKO_RENDER_WIDTH")) || 1320;
+                root.app.height = Number(Quickshell.env("MIKO_RENDER_HEIGHT")) || 860;
+                root.phase = 1;
+                return;
+            }
+            if (root.phase === 1) {
                 const pages = [];
                 function findPages(item) {
                     if (item instanceof CC.MikoPageFlickable) pages.push(item);
@@ -44,7 +53,7 @@ QtObject {
                 root.viewport = page;
                 const scroll = Quickshell.env("MIKO_RENDER_SCROLL");
                 page.restoreScroll(scroll === "end" ? Math.max(0, page.contentHeight - page.height) : Number(scroll) || 0);
-                root.phase = 1;
+                root.phase = 2;
                 return;
             }
             capture.stop();
